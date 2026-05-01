@@ -1,4 +1,4 @@
-import { app } from './src/index.ts'
+import { app } from './index.js'
 
 const PORT = process.env.PORT || 3001
 
