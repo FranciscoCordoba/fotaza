@@ -1,8 +1,8 @@
-import { boolean, decimal, integer, pgTable, varchar } from "drizzle-orm/pg-core";
+import { boolean, decimal, integer, pgTable, serial, varchar } from "drizzle-orm/pg-core";
 import { publicacionTable } from "./publicacion.js";
 
 export const imagenTable = pgTable('imagen', {
-    id: integer().primaryKey(),
+    id: serial().primaryKey(),
     idPublicacion: varchar('id_publicacion', { length: 100 }).notNull().references(() => publicacionTable.id),
     url: varchar({ length: 255 }).notNull().unique(),
     comentariosActivos: boolean('comentarios_activos').default(true).notNull(),

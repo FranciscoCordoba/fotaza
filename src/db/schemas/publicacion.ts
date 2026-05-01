@@ -3,7 +3,7 @@ import { userTable } from "./user.js";
 
 export const publicacionTable = pgTable('publicacion', {
     nickUsuario: varchar('nick_usuario', { length: 100 }).notNull().references(() => userTable.nickname),
-    id: integer().primaryKey(),
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
     titulo: varchar('nombre', { length: 100 }).notNull(),
     descripcion: varchar('descripcion', { length: 255 }),
     editable: boolean().default(true).notNull(),
