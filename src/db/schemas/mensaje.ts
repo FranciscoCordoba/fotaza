@@ -3,8 +3,8 @@ import { userTable } from "./user.js";
 
 export const mensajeTable = pgTable('mensaje', {
     id: serial('id').primaryKey(),
-    nickRemitente: varchar('nick_remitente', { length: 100 }).notNull().references(() => userTable.nickname),
-    nickDestinatario: varchar('nick_destinatario', { length: 100 }).notNull().references(() => userTable.nickname),
+    nickRemitente: varchar('nick_remitente', { length: 100 }).notNull(),
+    nickDestinatario: varchar('nick_destinatario', { length: 100 }).notNull(),
     contenido: text('contenido').notNull(),
     createdAt: date('created_at').defaultNow().notNull()
 }, (table) => [

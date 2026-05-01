@@ -1,14 +1,17 @@
-import { boolean, date, pgTable, primaryKey, serial, varchar } from "drizzle-orm/pg-core";
+import { boolean, date, foreignKey, pgTable, serial, varchar } from "drizzle-orm/pg-core";
 import { userTable } from "./user.js";
 
 export const notificacionTable = pgTable('notificacion', {
-    id: serial('id'),
-    nickname: varchar({ length: 100 }).references(() => userTable.nickname),
+    id: serial('id').primaryKey(),
+    nickRecepcion: varchar('nick_recepcion', { length: 100 }).notNull(),
+    nickGeneracion: varchar('nick_generacion', { length: 100 }).notNull(),
     fuenteTipo: varchar('fuente_tipo', { length: 100 }).notNull(),
-    fuenteId: varchar('fuente_id', { length: 100 }).notNull(),
     texto: varchar({ length: 255 }).notNull(),
     createdAt: date('created_at').defaultNow().notNull(),
     vista: boolean().default(false).notNull()
-}, (table) => [
-    primaryKey({ columns: [table.nickname, table.id] })
+}, (tabla) => [
+    foreignKey({
+        columns: [tabla.nickRecepcion, tabla.nickGeneracion],
+        foreignColumns: [userTable.nickname, userTable.nickname]
+    })
 ])
