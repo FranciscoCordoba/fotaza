@@ -1,6 +1,6 @@
 import { db } from "../index.js";
 import { comentarioTable } from "../db/schemas/comentario.js";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 export class comentarioModel {
     static async getAll() {
@@ -18,12 +18,12 @@ export class comentarioModel {
             nickUsuario,
             idImagen,
             texto
-        })
+        }).returning()
         return newComentario
     }
 
     static async delete(id: number) {
-        const deletedComentario = await db.delete(comentarioTable).where(eq(comentarioTable.id, id))
+        const deletedComentario = await db.delete(comentarioTable).where(eq(comentarioTable.id, id)).returning()
         return deletedComentario
     }
 }

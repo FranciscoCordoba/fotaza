@@ -1,5 +1,5 @@
 import { date, foreignKey, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
-import { userTable } from "./user.js";
+import { usuarioTable } from "./usuario.js";
 import { comunidadTable } from "./comunidad.js";
 
 export const usuarioSigueComunidadTable = pgTable('usuario_sigue_comunidad', {
@@ -10,6 +10,6 @@ export const usuarioSigueComunidadTable = pgTable('usuario_sigue_comunidad', {
     primaryKey({ columns: [table.nickUsuario, table.nickComunidad] }),
     foreignKey({
         columns: [table.nickUsuario, table.nickComunidad],
-        foreignColumns: [userTable.nickname, comunidadTable.nickComunidad]
+        foreignColumns: [usuarioTable.nickname, comunidadTable.nickComunidad]
     })
 ])

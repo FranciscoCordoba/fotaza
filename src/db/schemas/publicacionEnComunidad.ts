@@ -1,9 +1,9 @@
-import { date, foreignKey, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
+import { date, foreignKey, integer, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
 import { publicacionTable } from "./publicacion.js";
 import { comunidadTable } from "./comunidad.js";
 
 export const publicacionEnComunidadTable = pgTable('publicacion_en_comunidad', {
-    idPublicacion: varchar('id_publicacion', { length: 100 }),
+    idPublicacion: integer('id_publicacion'),
     nickComunidad: varchar('nick_comunidad', { length: 100 }),
     createdAt: date('created_at').defaultNow().notNull()
 }, (table) => [

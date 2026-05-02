@@ -1,8 +1,8 @@
 import { boolean, date, integer, pgTable, varchar } from "drizzle-orm/pg-core";
-import { userTable } from "./user.js";
+import { usuarioTable } from "./usuario.js";
 
 export const publicacionTable = pgTable('publicacion', {
-    nickUsuario: varchar('nick_usuario', { length: 100 }).notNull().references(() => userTable.nickname),
+    nickUsuario: varchar('nick_usuario', { length: 100 }).notNull().references(() => usuarioTable.nickname),
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     titulo: varchar('nombre', { length: 100 }).notNull(),
     descripcion: varchar('descripcion', { length: 255 }),

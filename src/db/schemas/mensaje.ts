@@ -1,5 +1,5 @@
 import { date, foreignKey, pgTable, serial, text, varchar } from "drizzle-orm/pg-core";
-import { userTable } from "./user.js";
+import { usuarioTable } from "./usuario.js";
 
 export const mensajeTable = pgTable('mensaje', {
     id: serial('id').primaryKey(),
@@ -10,6 +10,6 @@ export const mensajeTable = pgTable('mensaje', {
 }, (table) => [
     foreignKey({
         columns: [table.nickRemitente, table.nickDestinatario],
-        foreignColumns: [userTable.nickname, userTable.nickname]
+        foreignColumns: [usuarioTable.nickname, usuarioTable.nickname]
     })
 ])
