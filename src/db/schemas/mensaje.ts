@@ -9,7 +9,11 @@ export const mensajeTable = pgTable('mensaje', {
     createdAt: date('created_at').defaultNow().notNull()
 }, (table) => [
     foreignKey({
-        columns: [table.nickRemitente, table.nickDestinatario],
-        foreignColumns: [usuarioTable.nickname, usuarioTable.nickname]
+        columns: [table.nickRemitente],
+        foreignColumns: [usuarioTable.nickname]
+    }),
+    foreignKey({
+        columns: [table.nickDestinatario],
+        foreignColumns: [usuarioTable.nickname]
     })
 ])

@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { usuarioTable } from "../db/schemas/usuario.js";
 import { db } from "../index.js";
+import type { usuarioInsert } from "../utils/types.js";
 
 export class usuarioModel {
 
@@ -10,19 +11,18 @@ export class usuarioModel {
     }
 
     static async getByNickname(nickname: string) {
-        const usuario = await db.select().from(usuarioTable).where(eq(usuarioTable.nickname, nickname))
+        const [usuario] = await db.select().from(usuarioTable).where(eq(usuarioTable.nickname, nickname))
         return usuario
     }
 
-    static async create(nick: string, password: string, nombre: string, correo: string, rol: string) {
-        const nuevoUsuario = await db.insert(usuarioTable).values({
-            nickname: nick,
-            password: password,
-            nombre: nombre,
-            correo: correo,
-            rol: rol
-        }).returning()
-        return nuevoUsuario
+    static async create(newUsuario: usuarioInsert) {
+        const [nuevoUsuario] = await db.insert(usuarioTable).values(newUsuario).returning()
+
+        if (nuevoUsuario) {
+            const { password, ...usuarioPublico } = nuevoUsuario
+            return usuarioPublico
+        }
+        return undefined
     }
 
     static async delete(nick: string) {

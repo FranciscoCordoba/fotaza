@@ -10,7 +10,11 @@ export const comentarioTable = pgTable('comentario', {
     createdAt: date('created_at').defaultNow().notNull()
 }, (table) => [
     foreignKey({
-        columns: [table.idImagen, table.nickUsuario],
-        foreignColumns: [imagenTable.id, usuarioTable.nickname]
+        columns: [table.idImagen],
+        foreignColumns: [imagenTable.id]
+    }),
+    foreignKey({
+        columns: [table.nickUsuario],
+        foreignColumns: [usuarioTable.nickname]
     })
 ])

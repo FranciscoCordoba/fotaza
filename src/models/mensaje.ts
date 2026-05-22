@@ -1,6 +1,7 @@
 import { mensajeTable } from "../db/schemas/mensaje.js";
 import { db } from "../index.js";
 import { and, eq, or } from "drizzle-orm";
+import type { mensajeInsert } from "../utils/types.js";
 
 export class mensajeModel {
 
@@ -24,23 +25,21 @@ export class mensajeModel {
         return chats
     }
 
-    static async create(nickRemitente: string, nickDestinatario: string, contenido: string) {
-        const nuevoMensaje = await db.insert(mensajeTable).values({
-            nickRemitente,
-            nickDestinatario,
-            contenido
-        }).returning()
+    static async create(mensaje: mensajeInsert) {
+
+        const nuevoMensaje = await db.insert(mensajeTable).values(mensaje).returning()
+
         return nuevoMensaje
     }
 
     static async delete(nickRemitente: string, nickDestinatario: string) {
-        const mensajeEliminado = await db.delete(mensajeTable).where(
+        const mensajesEliminados = await db.delete(mensajeTable).where(
             and(
                 eq(mensajeTable.nickRemitente, nickRemitente),
                 eq(mensajeTable.nickDestinatario, nickDestinatario)
             )
         ).returning()
-        return mensajeEliminado
+        return mensajesEliminados
     }
 
 }

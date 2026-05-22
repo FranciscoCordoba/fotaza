@@ -11,7 +11,11 @@ export const notificacionTable = pgTable('notificacion', {
     vista: boolean().default(false).notNull()
 }, (tabla) => [
     foreignKey({
-        columns: [tabla.nickRecepcion, tabla.nickGeneracion],
-        foreignColumns: [usuarioTable.nickname, usuarioTable.nickname]
+        columns: [tabla.nickRecepcion],
+        foreignColumns: [usuarioTable.nickname]
+    }),
+    foreignKey({
+        columns: [tabla.nickGeneracion],
+        foreignColumns: [usuarioTable.nickname]
     })
 ])

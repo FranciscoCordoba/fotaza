@@ -1,6 +1,7 @@
 import { db } from "../index.js";
 import { usuarioSigueATable } from "../db/schemas/usuarioSigueA.js";
 import { and, eq } from "drizzle-orm";
+import type { usuarioSigueA, usuarioSigueAInsert } from "../utils/types.js";
 
 export class usuarioSigueAModel {
 
@@ -19,7 +20,9 @@ export class usuarioSigueAModel {
         return suscripciones
     }
 
-    static async create(nickSeguidor: string, nickSeguido: string) {
+    static async create(follow: usuarioSigueAInsert) {
+        const { nickSeguidor, nickSeguido } = follow
+
         const nuevaSuscripcion = await db.insert(usuarioSigueATable).values({
             nickSeguidor,
             nickSeguido
@@ -28,6 +31,7 @@ export class usuarioSigueAModel {
     }
 
     static async delete(nickSeguidor: string, nickSeguido: string) {
+
         const suscripcionEliminada = await db.delete(usuarioSigueATable).where(
             and(
                 eq(usuarioSigueATable.nickSeguidor, nickSeguidor),

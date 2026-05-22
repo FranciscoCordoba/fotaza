@@ -8,7 +8,11 @@ export const usuarioSigueATable = pgTable('usuario_sigue_a', {
 }, (table) => [
     primaryKey({ columns: [table.nickSeguidor, table.nickSeguido] }),
     foreignKey({
-        columns: [table.nickSeguidor, table.nickSeguido],
-        foreignColumns: [usuarioTable.nickname, usuarioTable.nickname]
+        columns: [table.nickSeguidor],
+        foreignColumns: [usuarioTable.nickname]
+    }),
+    foreignKey({
+        columns: [table.nickSeguido],
+        foreignColumns: [usuarioTable.nickname]
     })
 ])
