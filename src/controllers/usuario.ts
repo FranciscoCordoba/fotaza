@@ -3,37 +3,66 @@ import { usuarioModel } from "../models/usuario.js";
 import type { Request, Response } from "express";
 import type { mensajeInsert, usuarioInsert, usuarioSigueA, usuarioSigueAInsert } from "../utils/types.js";
 import { mensajeModel } from "../models/mensaje.js";
+import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
 
 export class usuarioController {
 
-    static async loginUsuario(req: Request, res: Response) {
+    static async allUsers(req: Request, res: Response) {
+        const usuarios = await usuarioModel.getAll()
+        return res.json(usuarios)
+    }
 
+    static async loginUsuarioView(req: Request, res: Response) {
+        res.render('login')
+    }
+
+    static async loginUsuario(req: Request, res: Response) {
 
         const { nickname, password } = req.body
 
         const usuario = await usuarioModel.getByNickname(nickname)
         if (!usuario)
-            return res.status(400).json({
-                status: "Error",
-                message: "Usuario no encontrado"
-            })
+            throw new Error('Usuario no encontrado')
+
+        const coincide = await bcrypt.compare(password, usuario.password)
+        if (!coincide)
+            throw new Error('Contraseña incorrecta')
+
+        const token = jwt.sign({ nickname: usuario.nickname }, 'secretKey', {
+            expiresIn: '1h'
+        })
+
+        res.cookie('token', token, {
+            httpOnly: true,     // no se puede acceder desde javascript
+            secure: true,       // solo se envia con https
+            sameSite: 'strict'  // solo se envia en la misma pagina
+        })
 
         return res.status(200).json({ message: 'Usuario logueado exitosamente' })
     }
 
-    static async crearUsuario(req: Request, res: Response) {
+    static async registrarUsuario(req: Request, res: Response) {
         const newUsuario: usuarioInsert = req.body
 
-        const resultado = await usuarioModel.create(newUsuario)
+        const existe = await usuarioModel.getByNickname(newUsuario.nickname)
+        if (existe)
+            throw new Error('El usuario ya existe')
 
-        if (resultado)
-            return res.status(201).json(resultado)
+        const hash = await bcrypt.hash(newUsuario.password, 10)
 
+        const resultado = await usuarioModel.create({ ...newUsuario, password: hash })
 
-        return res.status(400).json({
-            status: "Error",
-            message: "Error al crear usuario"
-        })
+        if (!resultado)
+            throw new Error('Error al crear usuario')
+
+        return res.status(201).json(resultado)
+
+    }
+
+    static async cerrarSesion(req: Request, res: Response) {
+        res.clearCookie('token')
+        return res.status(200).json({ message: 'Usuario deslogueado exitosamente' })
     }
 
     static async eliminarUsuario(req: Request, res: Response) {

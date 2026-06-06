@@ -3,15 +3,16 @@ import { usuarioController } from '../controllers/usuario.js'
 
 const router = Router()
 
-router.post('/login', usuarioController.loginUsuario)
-router.post('/crear', usuarioController.crearUsuario)
-router.delete('/eliminar', usuarioController.eliminarUsuario)
+router.get('/allUsers', usuarioController.allUsers)
 
-router.post('/seguir', usuarioController.seguirUsuario)
-router.delete('/dejar_seguir', usuarioController.dejarSeguirUsuario)
-router.get('/listar_seguidores', usuarioController.listarSeguidores)
+// router.post('/cerrar_sesion', usuarioController.cerrarSesion)
+// router.delete('/eliminar', usuarioController.eliminarUsuario)
 
-router.post('/enviar_mensaje', usuarioController.enviarMensaje)
+// router.post('/seguir', usuarioController.seguirUsuario)
+// router.delete('/dejar_seguir', usuarioController.dejarSeguirUsuario)
+// router.get('/listar_seguidores', usuarioController.listarSeguidores)
+
+// router.post('/enviar_mensaje', usuarioController.enviarMensaje)
 
 
 export default router
