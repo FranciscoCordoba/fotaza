@@ -1,0 +1,18 @@
+html 
+    head 
+        title Nueva Publicacion 
+
+    body 
+
+        form(action="/publicacion/crear", method="POST", enctype="multipart/form-data")
+            label(for="nickUsuario") Nickname:
+            input(type="text", name="nickUsuario") 
+            label(for="titulo") Titulo:
+            input(type="text", name="titulo")
+            label(for="descripcion") Descripcion:
+            input(type="text", name="descripcion")
+            label(for="imagen") Imagen:
+            input(type="file", name="imagen")
+            label(for="editable") Editable:
+            input(type="checkbox", name="editable")
+            button Enviar 

@@ -11,7 +11,7 @@ export class publicacionModel {
 
     static async getById(id: number) {
         const publicacion = await db.select().from(publicacionTable).where(eq(publicacionTable.id, id))
-        return publicacion
+        return publicacion[0]
     }
 
     static async create(nickUsuario: string, titulo: string, descripcion: string, editable: boolean) {
