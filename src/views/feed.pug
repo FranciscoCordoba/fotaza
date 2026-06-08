@@ -12,5 +12,10 @@ html
                 div.publicacion(style="border:1px solid black;margin: 5px;")
                     p #{publicacion.nickUsuario} - #{publicacion.titulo}
                     p #{publicacion.descripcion}
-                    img(src=publicacion.imagen.url, alt=publicacion.titulo, style="width: 200px")
-                    button(onclick="window.location.href = 'publicacion/p/" + publicacion.id + "'") Ver
+                    if publicacion.etiquetas && publicacion.etiquetas.length > 0
+                        p(style="margin: 5px 0; font-size: 0.85em; color: #666;")
+                            each etiqueta in publicacion.etiquetas
+                                span(style="margin-right: 5px; background-color: #f0f0f0; padding: 2px 6px; border-radius: 4px; display: inline-block;") ##{etiqueta.etiqueta}
+                    if publicacion.imagen
+                        img(src=publicacion.imagen.url, alt=publicacion.titulo, style="width: 200px; display: block; margin-top: 5px;")
+                    button(onclick="window.location.href = 'publicacion/p/" + publicacion.id + "'", style="margin-top: 5px;") Ver

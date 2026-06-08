@@ -3,6 +3,6 @@ import { feedController } from "../controllers/feed.js"
 
 const router = Router()
 
-router.get('/all', feedController.getAll)
+router.get('/', feedController.getAll)
 
 export default router

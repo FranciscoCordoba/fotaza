@@ -14,12 +14,11 @@ export class publicacionModel {
         return publicacion[0]
     }
 
-    static async create(nickUsuario: string, titulo: string, descripcion: string, editable: boolean) {
+    static async create(nickUsuario: string, titulo: string, descripcion: string) {
         const nuevaPublicacion = await db.insert(publicacionTable).values({
             nickUsuario,
             titulo,
-            descripcion,
-            editable
+            descripcion
         }).returning()
         return nuevaPublicacion
     }

@@ -1,5 +1,6 @@
 import { publicacionModel } from "../models/publicacion.js";
 import { imagenModel } from "../models/imagen.js";
+import { etiquetaModel } from "../models/etiqueta.js";
 import type { Request, Response } from "express";
 import type { publicacion } from "../utils/types.js";
 import { subirACaudinary } from "../utils/cloudinary.js";
@@ -29,12 +30,10 @@ export class publicacionController {
         if (!publicacion)
             throw new Error("Publicacion no encontrada")
 
-        const imagen = await imagenModel.getById(publicacion.id)
-        if (!imagen)
-            throw new Error("Imagen no encontrada")
+        const imagenes = await imagenModel.getByPublicacionId(publicacion.id)
+        const etiquetas = await etiquetaModel.getByIdPublicacion(publicacion.id)
 
-
-        return res.render('publicacion', { publicacion, imagen })
+        return res.render('publicacion', { publicacion, imagenes, etiquetas })
     }
 
     static async crearPublicacionView(req: Request, res: Response) {
@@ -42,26 +41,40 @@ export class publicacionController {
     }
 
     static async crearPublicacion(req: Request, res: Response) {
-        const { nickUsuario, titulo, descripcion } = req.body
-        const editable: boolean = req.body.editable === 'on'
+        const { nickUsuario, titulo, descripcion, etiquetas } = req.body
 
-        const resultado = await publicacionModel.create(nickUsuario, titulo, descripcion, editable)
+        const resultado = await publicacionModel.create(nickUsuario, titulo, descripcion)
 
         if (!resultado)
             throw new Error("Error al crear publicacion")
 
         const idPublicacion: number = resultado[0]!.id
 
-        const img = req?.file
-        if (!img)
-            throw new Error("Imagen no encontrada")
+        const files = req.files as Express.Multer.File[]
+        if (!files || files.length === 0)
+            throw new Error("Debe subir al menos una imagen")
 
-        const bufferImg = img.buffer
+        const uploadPromises = files.map(async (file) => {
+            const result = (await subirACaudinary(file.buffer)) as any
+            return result.secure_url
+        })
+        const urls = await Promise.all(uploadPromises)
 
-        const result = await subirACaudinary(bufferImg)
+        const saveImagePromises = urls.map(url => imagenModel.create(idPublicacion, url))
+        await Promise.all(saveImagePromises)
 
-        const imagenesPublicacion = await imagenModel.create(idPublicacion, result.secure_url, true, 0, '')
+        if (etiquetas && typeof etiquetas === 'string') {
+            const listaEtiquetas = etiquetas
+                .split(',')
+                .map(tag => tag.trim())
+                .filter(tag => tag.length > 0)
 
-        return res.json(resultado)
+            if (listaEtiquetas.length > 0) {
+                const saveTagPromises = listaEtiquetas.map(tag => etiquetaModel.create(idPublicacion, tag))
+                await Promise.all(saveTagPromises)
+            }
+        }
+
+        return res.redirect('/feed')
     }
 }

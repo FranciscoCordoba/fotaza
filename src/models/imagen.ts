@@ -14,15 +14,19 @@ export class imagenModel {
         return imagen[0]
     }
 
-    static async create(idPublicacion: number, url: string, comentariosActivos: boolean, precio: number, textoMarcaDeAgua: string) {
+    static async create(idPublicacion: number, url: string, precio: number | null = null, textoMarcaDeAgua: string | null = null) {
         const nuevaImagen = await db.insert(imagenTable).values({
             idPublicacion,
             url,
-            comentariosActivos,
             precio,
             textoMarcaDeAgua
         }).returning()
         return nuevaImagen
+    }
+
+    static async getByPublicacionId(idPublicacion: number) {
+        const imagenes = await db.select().from(imagenTable).where(eq(imagenTable.idPublicacion, idPublicacion))
+        return imagenes
     }
 
     static async delete(id: number) {

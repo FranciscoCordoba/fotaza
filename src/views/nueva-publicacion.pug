@@ -14,10 +14,10 @@ html
             label(for="descripcion") Descripcion:
             input(type="text", name="descripcion")
             br
-            label(for="imagen") Imagen:
-            input(type="file", name="imagen")
+            label(for="imagenes") Imágenes:
+            input(type="file", name="imagenes", multiple)
             br
-            label(for="editable") Editable:
-            input(type="checkbox", name="editable")
+            label(for="etiquetas") Etiquetas (separadas por comas):
+            input(type="text", name="etiquetas", placeholder="ej: naturaleza, playa, sol")
             br
-            button Enviar 
+            button Enviar

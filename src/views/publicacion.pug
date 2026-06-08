@@ -1,10 +1,20 @@
 html 
     head 
-        title Publicacion #{id}
+        title Publicacion #{publicacion.id}
 
     body 
 
-        h1 Publicacion #{id}
+        h1 Publicacion #{publicacion.id}
         p #{publicacion.nickUsuario} - #{publicacion.titulo}
         p #{publicacion.descripcion}
-        img(src=imagen.url, alt=publicacion.titulo, style="width: 400px")
+
+        if etiquetas && etiquetas.length > 0
+            p(style="margin-top: 10px; margin-bottom: 15px;")
+                strong Etiquetas: 
+                each etiqueta in etiquetas
+                    span(style="margin-right: 8px; background-color: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-size: 0.9em; font-family: sans-serif;") ##{etiqueta.etiqueta}
+
+        div.imagenes(style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px;")
+            if imagenes
+                each img in imagenes
+                    img(src=img.url, alt=publicacion.titulo, style="max-width: 400px; border: 1px solid #ddd;")
