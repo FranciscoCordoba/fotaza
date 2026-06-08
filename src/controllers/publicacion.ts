@@ -18,6 +18,25 @@ export class publicacionController {
         return res.json(publicacion)
     }
 
+    static async getPublicacionByIdView(req: Request, res: Response) {
+        const { id } = req.params
+
+        const idNumero: number = Number(id)
+        if (isNaN(idNumero))
+            throw new Error("ID invalido")
+
+        const publicacion = await publicacionModel.getById(idNumero)
+        if (!publicacion)
+            throw new Error("Publicacion no encontrada")
+
+        const imagen = await imagenModel.getById(publicacion.id)
+        if (!imagen)
+            throw new Error("Imagen no encontrada")
+
+
+        return res.render('publicacion', { publicacion, imagen })
+    }
+
     static async crearPublicacionView(req: Request, res: Response) {
         return res.render('nueva-publicacion')
     }

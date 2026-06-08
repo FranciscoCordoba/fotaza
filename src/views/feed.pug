@@ -3,4 +3,14 @@ html
         title Feed 
 
     body 
-        button(onclick="window.location.href = '/nueva-publicacion'") Subir nueva publicacion
+        h1 Todas las publicaciones
+
+        button(onclick="window.location.href = '/publicacion/crear'") Subir nueva publicacion
+
+        .publicaciones
+            each publicacion in publicaciones 
+                div.publicacion(style="border:1px solid black;margin: 5px;")
+                    p #{publicacion.nickUsuario} - #{publicacion.titulo}
+                    p #{publicacion.descripcion}
+                    img(src=publicacion.imagen.url, alt=publicacion.titulo, style="width: 200px")
+                    button(onclick="window.location.href = 'publicacion/p/" + publicacion.id + "'") Ver

@@ -2,6 +2,7 @@ import { app } from './index.js'
 import usuarioRouter from './routes/usuario.js'
 import authRouter from './routes/auth.js'
 import publicacionRouter from './routes/publicacion.js'
+import feedRouter from './routes/feed.js'
 
 const PORT = process.env.PORT || 3001
 
@@ -21,6 +22,7 @@ const PORT = process.env.PORT || 3001
 app.use('/auth', authRouter)
 app.use('/usuario', usuarioRouter)
 app.use('/publicacion', publicacionRouter)
+app.use('/feed', feedRouter)
 
 if (!process.env.NODE_ENV) //NODE_ENV ni como produccion ni como tests
     app.listen(PORT, () => {

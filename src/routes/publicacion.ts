@@ -11,7 +11,8 @@ const upload = multer({
 
 const router = Router()
 
-router.get('/p/:id', publicacionController.getPublicacionById)
+router.get('/publicacion/:id', publicacionController.getPublicacionById)
+router.get('/p/:id', publicacionController.getPublicacionByIdView)
 router.get('/crear', publicacionController.crearPublicacionView)
 router.post('/crear', upload.single('imagen'), publicacionController.crearPublicacion)
 

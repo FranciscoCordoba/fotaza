@@ -11,7 +11,7 @@ export class imagenModel {
 
     static async getById(id: number) {
         const imagen = await db.select().from(imagenTable).where(eq(imagenTable.id, id))
-        return imagen
+        return imagen[0]
     }
 
     static async create(idPublicacion: number, url: string, comentariosActivos: boolean, precio: number, textoMarcaDeAgua: string) {

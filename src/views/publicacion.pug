@@ -1,0 +1,10 @@
+html 
+    head 
+        title Publicacion #{id}
+
+    body 
+
+        h1 Publicacion #{id}
+        p #{publicacion.nickUsuario} - #{publicacion.titulo}
+        p #{publicacion.descripcion}
+        img(src=imagen.url, alt=publicacion.titulo, style="width: 400px")
