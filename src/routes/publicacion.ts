@@ -23,8 +23,9 @@ const upload = multer({
 const router = Router()
 
 router.get('/publicacion/:id', publicacionController.getPublicacionById)
-router.get('/p/:id', publicacionController.getPublicacionByIdView)
+router.get('/p/:id/:orden', publicacionController.getPublicacionByIdView)
 router.get('/crear', publicacionController.crearPublicacionView)
+router.get('/buscar', publicacionController.buscarPublicacionesView)
 router.post('/crear', upload.array('imagenes', 10), publicacionController.crearPublicacion)
 
 export default router

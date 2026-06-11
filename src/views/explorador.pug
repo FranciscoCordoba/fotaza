@@ -3,13 +3,22 @@ html
         title Explorar contenido
 
     body 
-        form(action="GET")
+        form(action="/publicacion/buscar", method="GET")
             input(type="text", name="busqueda", placeholder="Buscar")
             button Buscar 
 
         div
             div#publicaciones
-             
+                each publicacion in publicacionesConDatos
+                    div 
+                        h2= publicacion.titulo
+                        p= publicacion.descripcion
+                        div 
+                            img(src=publicacion.imagen.url, alt=publicacion.titulo, style="width: 200px;")
+                        div 
+                            each etiqueta in publicacion.etiquetas
+                                span(style="margin: 0 5px 0 0;")= "#" + etiqueta.etiqueta
+                        a(href="/publicacion/p/" + publicacion.id + "/1", style="margin-top: 5px;") Ver publicacion
             //div#cuentas
             //div#comunidades
 

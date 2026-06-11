@@ -20,7 +20,7 @@ export class publicacionController {
     }
 
     static async getPublicacionByIdView(req: Request, res: Response) {
-        const { id } = req.params
+        const { id, orden } = req.params
 
         const idNumero: number = Number(id)
         if (isNaN(idNumero))
@@ -30,10 +30,36 @@ export class publicacionController {
         if (!publicacion)
             throw new Error("Publicacion no encontrada")
 
-        const imagenes = await imagenModel.getByPublicacionId(publicacion.id)
-        const etiquetas = await etiquetaModel.getByIdPublicacion(publicacion.id)
+        const ordenNumero: number = Number(orden)
+        if (isNaN(ordenNumero))
+            throw new Error("Orden invalido")
 
-        return res.render('publicacion', { publicacion, imagenes, etiquetas })
+        const imagen = await imagenModel.getByPublicacionIdAndOrden(publicacion.id, ordenNumero)
+        const etiquetas = await etiquetaModel.getByIdPublicacion(publicacion.id)
+        const { prev, post } = await imagenModel.getPrevYPost(publicacion.id, ordenNumero)
+
+        return res.render('publicacion', { publicacion, imagen, etiquetas, prev, post })
+    }
+
+    static async buscarPublicacionesView(req: Request, res: Response) {
+        const { busqueda } = req.query
+
+        if (!busqueda || typeof busqueda !== 'string')
+            throw new Error("Busqueda invalida")
+
+        const publicaciones = await publicacionModel.getByTitulo(busqueda)
+
+        const publicacionesConDatos = await Promise.all(publicaciones.map(async publicacion => {
+            const imagen = await imagenModel.getByPublicacionIdAndOrden(publicacion.id, 1)
+            const etiquetas = await etiquetaModel.getByIdPublicacion(publicacion.id)
+            return {
+                ...publicacion,
+                imagen,
+                etiquetas
+            }
+        }))
+
+        return res.render('explorador', { publicacionesConDatos })
     }
 
     static async crearPublicacionView(req: Request, res: Response) {
@@ -60,7 +86,7 @@ export class publicacionController {
         })
         const urls = await Promise.all(uploadPromises)
 
-        const saveImagePromises = urls.map(url => imagenModel.create(idPublicacion, url))
+        const saveImagePromises = urls.map((url, index) => imagenModel.create(idPublicacion, url, index + 1))
         await Promise.all(saveImagePromises)
 
         if (etiquetas && typeof etiquetas === 'string') {

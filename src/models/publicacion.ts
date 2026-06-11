@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, ilike } from "drizzle-orm";
 import { publicacionTable } from "../db/schemas/publicacion.js";
 import { db } from "../index.js";
 
@@ -12,6 +12,11 @@ export class publicacionModel {
     static async getById(id: number) {
         const publicacion = await db.select().from(publicacionTable).where(eq(publicacionTable.id, id))
         return publicacion[0]
+    }
+
+    static async getByTitulo(titulo: string) {
+        const publicaciones = await db.select().from(publicacionTable).where(ilike(publicacionTable.titulo, `%${titulo}%`)).limit(10)
+        return publicaciones
     }
 
     static async create(nickUsuario: string, titulo: string, descripcion: string) {

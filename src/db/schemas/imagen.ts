@@ -5,6 +5,7 @@ export const imagenTable = pgTable('imagen', {
     id: serial().primaryKey(),
     idPublicacion: integer('id_publicacion').notNull().references(() => publicacionTable.id),
     url: varchar({ length: 255 }).notNull().unique(),
+    orden: integer().notNull(),
     comentariosActivos: boolean('comentarios_activos').default(true).notNull(),
     textoMarcaDeAgua: varchar('texto_marca_de_agua', { length: 100 })
 })
