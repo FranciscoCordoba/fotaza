@@ -15,9 +15,9 @@ html
             input(type="text", name="descripcion")
             br
             label(for="imagenes") Imágenes:
-            input(type="file", name="imagenes", multiple)
+            input(type="file", name="imagenes", multiple, accept="image/*")
             br
-            label(for="etiquetas") Etiquetas (separadas por comas):
-            input(type="text", name="etiquetas", placeholder="ej: naturaleza, playa, sol")
+            label(for="etiquetas") Etiquetas (separadas por espacio y con #):
+            input(type="text", name="etiquetas", placeholder="ej: #naturaleza #playa #sol")
             br
             button Enviar

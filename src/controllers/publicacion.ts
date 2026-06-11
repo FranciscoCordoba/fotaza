@@ -65,8 +65,9 @@ export class publicacionController {
 
         if (etiquetas && typeof etiquetas === 'string') {
             const listaEtiquetas = etiquetas
-                .split(',')
-                .map(tag => tag.trim())
+                .split(/\s+/)
+                .filter(tag => tag.startsWith('#'))
+                .map(tag => tag.slice(1).trim())
                 .filter(tag => tag.length > 0)
 
             if (listaEtiquetas.length > 0) {

@@ -14,11 +14,10 @@ export class imagenModel {
         return imagen[0]
     }
 
-    static async create(idPublicacion: number, url: string, precio: number | null = null, textoMarcaDeAgua: string | null = null) {
+    static async create(idPublicacion: number, url: string, textoMarcaDeAgua: string | null = null) {
         const nuevaImagen = await db.insert(imagenTable).values({
             idPublicacion,
             url,
-            precio,
             textoMarcaDeAgua
         }).returning()
         return nuevaImagen
