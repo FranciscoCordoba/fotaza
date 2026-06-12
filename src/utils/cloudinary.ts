@@ -1,6 +1,10 @@
 import { v2 as cloudinary } from "cloudinary";
 
-process.loadEnvFile()
+try {
+    process.loadEnvFile()
+} catch (error) {
+    // Ignorar en producción si no existe el archivo .env
+}
 
 const { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_CLOUD_NAME } = process.env
 

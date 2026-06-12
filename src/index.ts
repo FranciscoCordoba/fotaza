@@ -5,7 +5,11 @@ import { join } from 'node:path'
 import cookieParser from "cookie-parser"
 import jwt from "jsonwebtoken"
 
-process.loadEnvFile()
+try {
+    process.loadEnvFile()
+} catch (error) {
+    // Ignorar en producción si no existe el archivo .env
+}
 
 
 export const app = express()
