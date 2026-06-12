@@ -17,7 +17,9 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 
-app.use((req: any, res, next) => {
+import type { Request, Response, NextFunction } from "express";
+
+app.use((req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies.token
     const refreshToken = req.cookies.refreshToken
 
@@ -28,7 +30,7 @@ app.use((req: any, res, next) => {
     if (token) {
         try {
             const data = jwt.verify(token, 'secretKey')
-            req.session.user = data
+            req.session.user = data as any
         } catch {
             // Si el token falló o expiró, intentamos con el refreshToken
             if (refreshToken) {

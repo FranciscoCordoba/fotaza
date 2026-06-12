@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { publicacionController } from '../controllers/publicacion.js'
+import { requiresAuth } from '../middlewares/auth.js'
 import multer from "multer"
 import type { Request } from "express"
 
@@ -27,6 +28,7 @@ router.get('/p/:id/:orden', publicacionController.getPublicacionByIdView)
 router.get('/crear', publicacionController.crearPublicacionView)
 router.get('/buscar', publicacionController.buscarPublicacionesView)
 router.post('/crear', upload.array('imagenes', 10), publicacionController.crearPublicacion)
-router.post('/imagen/:idImagen/valorar', publicacionController.valorarImagen)
+router.post('/imagen/:idImagen/valorar', requiresAuth, publicacionController.valorarImagen)
+router.post('/imagen/:idImagen/comentar', requiresAuth, publicacionController.comentarImagen)
 
 export default router

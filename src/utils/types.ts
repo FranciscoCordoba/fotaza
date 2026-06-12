@@ -58,3 +58,15 @@ export type publicacionEnComunidad = typeof publicacionEnComunidadTable.$inferSe
 
 export type notificacionInsert = typeof notificacionTable.$inferInsert
 export type notificacion = typeof notificacionTable.$inferSelect
+
+declare global {
+    namespace Express {
+        interface Request {
+            session?: {
+                user?: {
+                    nickname: string;
+                } | null;
+            }
+        }
+    }
+}

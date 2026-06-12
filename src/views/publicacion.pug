@@ -19,11 +19,11 @@ html
                 div(style="display: flex; flex-direction: row; align-items: center; gap: 8px;")
                     if prev
                         a(href="/publicacion/p/" + publicacion.id + "/" + prev.orden, style="margin-top: 5px; margin-right: 10px;") ⬅️
-                    img(src=imagen.url, alt=publicacion.titulo, style="max-width: 400px; border: 1px solid #ddd; display: block; margin-top: 10px; margin-bottom: 10px;")
+                    img(src=imagen.url, alt=publicacion.titulo, style="max-width: 400px; border: 1px solid black; display: block; margin-top: 10px; margin-bottom: 10px;")
                     if post
                         a(href="/publicacion/p/" + publicacion.id + "/" + post.orden, style="margin-top: 5px;") ➡️
                     
-                div(style="margin-top: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; display: inline-block;")
+                div(style="margin-top: 15px; padding: 10px; border: 1px solid black; border-radius: 4px; display: inline-block;")
                     if statsValoracion && statsValoracion.cantidad > 0
                         p Promedio: <strong>#{statsValoracion.promedio} / 5</strong> (basado en #{statsValoracion.cantidad} votos)
                     else
@@ -36,5 +36,22 @@ html
                             button(type="submit" name="puntaje" value="3" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 3 ⭐
                             button(type="submit" name="puntaje" value="4" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 4 ⭐
                             button(type="submit" name="puntaje" value="5" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 5 ⭐
+                
+                div(style="margin-top: 20px; padding: 15px; border: 1px solid black; border-radius: 4px;")
+                    h3 Comentarios
+                    if comentarios && comentarios.length > 0
+                        ul(style="list-style-type: none; padding: 0;")
+                            each comentario in comentarios
+                                li(style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #ccc;")
+                                    strong #{comentario.nickUsuario} 
+                                    span(style="color: #666;") - #{new Date(comentario.createdAt).toLocaleDateString()}
+                                    p(style="margin: 5px 0 0 0;") #{comentario.texto}
+                    else
+                        p(style="color: #666;") Aún no hay comentarios. ¡Sé el primero!
+
+                    form(action="/publicacion/imagen/" + imagen.id + "/comentar" method="POST" style="margin-top: 15px;")
+                        textarea(name="texto" rows="3" style="width: 100%; max-width: 400px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" placeholder="Escribe tu comentario aquí..." required)
+                        br
+                        button(type="submit" style="margin-top: 5px; padding: 6px 15px; border-radius: 4px;") Enviar comentario
             else
                 p(style="color: red;") No hay imagenes

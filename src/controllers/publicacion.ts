@@ -2,6 +2,7 @@ import { publicacionModel } from "../models/publicacion.js";
 import { imagenModel } from "../models/imagen.js";
 import { etiquetaModel } from "../models/etiqueta.js";
 import { valoracionModel } from "../models/valoracion.js";
+import { comentarioModel } from "../models/comentario.js";
 import type { Request, Response } from "express";
 import type { publicacion } from "../utils/types.js";
 import { subirACaudinary } from "../utils/cloudinary.js";
@@ -40,11 +41,13 @@ export class publicacionController {
         const { prev, post } = await imagenModel.getPrevYPost(publicacion.id, ordenNumero)
 
         let statsValoracion = null
+        let comentarios: any[] = []
         if (imagen) {
             statsValoracion = await valoracionModel.getStatsByImage(imagen.id)
+            comentarios = await comentarioModel.getAllByImage(imagen.id)
         }
 
-        return res.render('publicacion', { publicacion, imagen, etiquetas, prev, post, statsValoracion })
+        return res.render('publicacion', { publicacion, imagen, etiquetas, prev, post, statsValoracion, comentarios })
     }
 
     static async valorarImagen(req: Request, res: Response) {
@@ -58,14 +61,26 @@ export class publicacionController {
             throw new Error("Datos de valoracion invalidos")
         }
 
-        // Asumimos que req.session.user esta disponible (o estatico)
-        const reqAny = req as any
-        const nickUsuario = reqAny.session?.user?.nickname
-        if (!nickUsuario) {
-            return res.redirect('/auth/login')
+        const nickUsuario = req.session?.user?.nickname
+
+        await valoracionModel.create(nickUsuario!, idImagenNum, puntajeNum, false)
+
+        const backURL = req.header('Referer') || '/feed'
+        return res.redirect(backURL)
+    }
+
+    static async comentarImagen(req: Request, res: Response) {
+        const { idImagen } = req.params
+        const { texto } = req.body
+
+        const idImagenNum = Number(idImagen)
+        if (isNaN(idImagenNum) || !texto || texto.trim().length === 0) {
+            throw new Error("Datos de comentario invalidos")
         }
 
-        await valoracionModel.create(nickUsuario, idImagenNum, puntajeNum, false)
+        const nickUsuario = req.session?.user?.nickname
+
+        await comentarioModel.create(nickUsuario!, idImagenNum, texto.trim())
 
         const backURL = req.header('Referer') || '/feed'
         return res.redirect(backURL)
