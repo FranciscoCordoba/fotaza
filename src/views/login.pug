@@ -1,13 +1,15 @@
 html 
     head 
-        title {login / register}
+        title login / register
     body 
     
         div 
-            form(action="POST")
+            form(action="/auth/login" method="POST")
                 label(for="nickname") Nickname:
                 input(type="text", name="nickname") 
                 label(for="password") Contraseña:
                 input(type="password", name="password")
 
                 button Enviar 
+            p
+                a(href="/auth/registro") No tengo cuenta (Registrarse)

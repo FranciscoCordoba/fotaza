@@ -33,13 +33,51 @@ export class usuarioController {
             expiresIn: '1h'
         })
 
+        const refreshToken = jwt.sign({ nickname: usuario.nickname }, 'secretKey', {
+            expiresIn: '7d'
+        })
+
         res.cookie('token', token, {
             httpOnly: true,     // no se puede acceder desde javascript
             secure: true,       // solo se envia con https
             sameSite: 'strict'  // solo se envia en la misma pagina
         })
 
-        return res.status(200).json({ message: 'Usuario logueado exitosamente' })
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict'
+        })
+
+        return res.redirect('/feed')
+    }
+
+    static async refreshToken(req: Request, res: Response) {
+        const { refreshToken } = req.cookies
+
+        if (!refreshToken)
+            return res.status(401).json({ message: 'No hay refresh token' })
+
+        try {
+            const data: any = jwt.verify(refreshToken, 'secretKey')
+            const token = jwt.sign({ nickname: data.nickname }, 'secretKey', {
+                expiresIn: '1h'
+            })
+
+            res.cookie('token', token, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'strict'
+            })
+
+            return res.status(200).json({ message: 'Token refrescado' })
+        } catch (error) {
+            return res.status(403).json({ message: 'Refresh token invalido' })
+        }
+    }
+
+    static async registroUsuarioView(req: Request, res: Response) {
+        res.render('registro')
     }
 
     static async registrarUsuario(req: Request, res: Response) {
@@ -56,7 +94,7 @@ export class usuarioController {
         if (!resultado)
             throw new Error('Error al crear usuario')
 
-        return res.status(201).json(resultado)
+        return res.redirect('/auth/login')
 
     }
 

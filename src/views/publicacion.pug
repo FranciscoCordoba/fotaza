@@ -14,7 +14,7 @@ html
                 each etiqueta in etiquetas
                     span(style="margin-right: 8px; background-color: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-size: 0.9em; font-family: sans-serif;") ##{etiqueta.etiqueta}
 
-        div.imagen(style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 15px;")
+        div.imagen(style="margin-top: 15px;")
             if imagen
                 if prev
                     a(href="/publicacion/p/" + publicacion.id + "/" + prev.orden, style="margin-top: 5px;") Anterior

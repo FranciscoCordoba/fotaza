@@ -6,18 +6,18 @@ html
         h1 subir publicacion
         form(action="/publicacion/crear", method="POST", enctype="multipart/form-data")
             label(for="nickUsuario") Nickname:
-            input(type="text", name="nickUsuario")
+            input(type="text", name="nickUsuario", id="nickUsuario")
             br
             label(for="titulo") Titulo:
-            input(type="text", name="titulo")
+            input(type="text", name="titulo", id="titulo")
             br
             label(for="descripcion") Descripcion:
-            input(type="text", name="descripcion")
+            input(type="text", name="descripcion", id="descripcion")
             br
             label(for="imagenes") Imágenes:
-            input(type="file", name="imagenes", multiple, accept="image/*")
+            input(type="file", name="imagenes", multiple, accept="image/*", id="imagenes")
             br
             label(for="etiquetas") Etiquetas (separadas por espacio y con #):
-            input(type="text", name="etiquetas", placeholder="ej: #naturaleza #playa #sol")
+            input(type="text", name="etiquetas", id="etiquetas", placeholder="ej: #naturaleza #playa #sol")
             br
             button Enviar

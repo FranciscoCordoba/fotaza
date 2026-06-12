@@ -19,13 +19,55 @@ app.use(cookieParser())
 
 app.use((req: any, res, next) => {
     const token = req.cookies.token
+    const refreshToken = req.cookies.refreshToken
 
-    req.session = { user: null }
+    req.session = {
+        user: { nickname: 'usuario1' }
+    }
 
-    try {
-        const data = jwt.verify(token, 'secretKey')
-        req.session.user = data
-    } catch { }
+    if (token) {
+        try {
+            const data = jwt.verify(token, 'secretKey')
+            req.session.user = data
+        } catch {
+            // Si el token falló o expiró, intentamos con el refreshToken
+            if (refreshToken) {
+                try {
+                    const data: any = jwt.verify(refreshToken, 'secretKey')
+                    req.session.user = { nickname: data.nickname }
+
+                    // Generamos un nuevo token de acceso automáticamente
+                    const newToken = jwt.sign({ nickname: data.nickname }, 'secretKey', {
+                        expiresIn: '1h'
+                    })
+
+                    res.cookie('token', newToken, {
+                        httpOnly: true,
+                        secure: true,
+                        sameSite: 'strict'
+                    })
+                } catch {
+                    // El refreshToken también es inválido o expiró
+                }
+            }
+        }
+    } else if (refreshToken) {
+        // No hay token, pero sí refreshToken
+        try {
+            const data: any = jwt.verify(refreshToken, 'secretKey')
+            req.session.user = { nickname: data.nickname }
+
+            const newToken = jwt.sign({ nickname: data.nickname }, 'secretKey', {
+                expiresIn: '1h'
+            })
+
+            res.cookie('token', newToken, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'strict'
+            })
+        } catch { }
+    }
 
     next()
 })

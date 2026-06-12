@@ -5,7 +5,7 @@ export const usuarioTable = pgTable('user', {
     password: varchar({ length: 255 }).notNull(),
     correo: varchar({ length: 255 }).notNull().unique(),
     nombre: varchar({ length: 255 }).notNull(),
-    rol: varchar({ length: 255 }).notNull(),
+    rol: varchar({ length: 255 }).default('usuario').notNull(),
     activo: boolean().default(true).notNull(),
     createdAt: date('created_at').defaultNow().notNull(),
 })
