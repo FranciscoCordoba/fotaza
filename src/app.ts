@@ -6,12 +6,12 @@ import feedRouter from './routes/feed.js'
 
 const PORT = process.env.PORT || 3001
 
-// app.get('/', (req, res) => {
-//     if (req.session.user)
-//         res.redirect('/feed')
+app.get('/', (req, res) => {
+    if (req?.session?.user)
+        res.redirect('/feed')
 
-//     res.redirect('/auth/login')
-// })
+    res.redirect('/auth/login')
+})
 
 
 // app.get('/feed', (req, res) => {
