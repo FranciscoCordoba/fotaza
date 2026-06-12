@@ -3,6 +3,7 @@ import { imagenModel } from "../models/imagen.js";
 import { etiquetaModel } from "../models/etiqueta.js";
 import { valoracionModel } from "../models/valoracion.js";
 import { comentarioModel } from "../models/comentario.js";
+import { usuarioSigueAModel } from "../models/usuarioSigueA.js";
 import type { Request, Response } from "express";
 import type { publicacion } from "../utils/types.js";
 import { subirACaudinary } from "../utils/cloudinary.js";
@@ -40,14 +41,21 @@ export class publicacionController {
         const etiquetas = await etiquetaModel.getByIdPublicacion(publicacion.id)
         const { prev, post } = await imagenModel.getPrevYPost(publicacion.id, ordenNumero)
 
-        let statsValoracion = null
-        let comentarios: any[] = []
-        if (imagen) {
-            statsValoracion = await valoracionModel.getStatsByImage(imagen.id)
-            comentarios = await comentarioModel.getAllByImage(imagen.id)
+        const nickUsuario = req.session?.user?.nickname
+        let siguiendo = false
+        if (nickUsuario && nickUsuario != publicacion.nickUsuario) {
+            const resultado = await usuarioSigueAModel.getByNicknames(nickUsuario, publicacion.nickUsuario)
+            if (resultado)
+                siguiendo = true
         }
 
-        return res.render('publicacion', { publicacion, imagen, etiquetas, prev, post, statsValoracion, comentarios })
+        if (!imagen) {
+            throw new Error("Imagen no encontrada")
+        }
+        const statsValoracion = await valoracionModel.getStatsByImage(imagen.id)
+        const comentarios = await comentarioModel.getAllByImage(imagen.id)
+
+        return res.render('publicacion', { publicacion, imagen, etiquetas, prev, post, statsValoracion, comentarios, siguiendo, nickUsuario })
     }
 
     static async valorarImagen(req: Request, res: Response) {
@@ -112,7 +120,11 @@ export class publicacionController {
     }
 
     static async crearPublicacion(req: Request, res: Response) {
-        const { nickUsuario, titulo, descripcion, etiquetas } = req.body
+        const { titulo, descripcion, etiquetas } = req.body
+        const nickUsuario = req.session?.user?.nickname
+
+        if (!nickUsuario)
+            throw new Error("Usuario no logueado")
 
         const resultado = await publicacionModel.create(nickUsuario, titulo, descripcion)
 

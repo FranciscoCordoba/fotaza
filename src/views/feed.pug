@@ -8,7 +8,11 @@ html
             input(type="text", name="busqueda", placeholder="Buscar")
             button Buscar 
 
-        h1 Todas las publicaciones
+        div(style="margin-bottom: 10px;")
+            a(href="/feed", style="margin-right: 10px;") Feed Global
+            a(href="/feed/siguiendo") Feed Siguiendo
+
+        h1= titulo || 'Todas las publicaciones'
 
         button(onclick="window.location.href = '/publicacion/crear'") Subir nueva publicacion
 

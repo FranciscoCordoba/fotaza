@@ -10,14 +10,24 @@ export class usuarioSigueAModel {
         return suscripciones
     }
 
-    static async getAllSeguidos(nickSeguido: string) {
+    static async getAllSeguidos(nickSeguidor: string) {
+        const suscripciones = await db.select().from(usuarioSigueATable).where(eq(usuarioSigueATable.nickSeguidor, nickSeguidor))
+        return suscripciones
+    }
+
+    static async getAllSeguidores(nickSeguido: string) {
         const suscripciones = await db.select().from(usuarioSigueATable).where(eq(usuarioSigueATable.nickSeguido, nickSeguido))
         return suscripciones
     }
 
-    static async getAllSeguidores(nickSeguidor: string) {
-        const suscripciones = await db.select().from(usuarioSigueATable).where(eq(usuarioSigueATable.nickSeguidor, nickSeguidor))
-        return suscripciones
+    static async getByNicknames(nickSeguidor: string, nickSeguido: string) {
+        const suscripcion = await db.select().from(usuarioSigueATable).where(
+            and(
+                eq(usuarioSigueATable.nickSeguidor, nickSeguidor),
+                eq(usuarioSigueATable.nickSeguido, nickSeguido)
+            )
+        )
+        return suscripcion[0]
     }
 
     static async create(follow: usuarioSigueAInsert) {

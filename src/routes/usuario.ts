@@ -8,8 +8,8 @@ router.get('/allUsers', usuarioController.allUsers)
 // router.post('/cerrar_sesion', usuarioController.cerrarSesion)
 // router.delete('/eliminar', usuarioController.eliminarUsuario)
 
-// router.post('/seguir', usuarioController.seguirUsuario)
-// router.delete('/dejar_seguir', usuarioController.dejarSeguirUsuario)
+router.post('/seguir', usuarioController.seguirUsuario)
+router.post('/dejar_seguir', usuarioController.dejarSeguirUsuario)
 // router.get('/listar_seguidores', usuarioController.listarSeguidores)
 
 // router.post('/enviar_mensaje', usuarioController.enviarMensaje)

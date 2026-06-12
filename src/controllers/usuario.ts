@@ -6,6 +6,8 @@ import { mensajeModel } from "../models/mensaje.js";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 
+const JWT_SECRET = process.env.JWT_SECRET || 'secretKey'
+
 export class usuarioController {
 
     static async allUsers(req: Request, res: Response) {
@@ -29,11 +31,11 @@ export class usuarioController {
         if (!coincide)
             throw new Error('Contraseña incorrecta')
 
-        const token = jwt.sign({ nickname: usuario.nickname }, 'secretKey', {
+        const token = jwt.sign({ nickname: usuario.nickname }, JWT_SECRET, {
             expiresIn: '1h'
         })
 
-        const refreshToken = jwt.sign({ nickname: usuario.nickname }, 'secretKey', {
+        const refreshToken = jwt.sign({ nickname: usuario.nickname }, JWT_SECRET, {
             expiresIn: '7d'
         })
 
@@ -59,8 +61,8 @@ export class usuarioController {
             return res.status(401).json({ message: 'No hay refresh token' })
 
         try {
-            const data: any = jwt.verify(refreshToken, 'secretKey')
-            const token = jwt.sign({ nickname: data.nickname }, 'secretKey', {
+            const data: any = jwt.verify(refreshToken, JWT_SECRET)
+            const token = jwt.sign({ nickname: data.nickname }, JWT_SECRET, {
                 expiresIn: '1h'
             })
 
@@ -112,18 +114,55 @@ export class usuarioController {
     }
 
     //Tabla usuarioSigueA
-    static async seguirUsuario(req: Request, res: Response) {
-        const info: usuarioSigueAInsert = req.body
-        const follow = await usuarioSigueAModel.create(info)
-        if (follow)
-            return res.status(200).json({ solicitud: 'exitosa' })
+    static async usuarioSigueA(req: Request, res: Response) {
+        const { nickSeguido } = req.body
+        const nickSeguidor = req.session?.user?.nickname
 
-        return res.status(500).json({ solicitud: 'fallida' })
+        if (!nickSeguidor)
+            throw new Error('No se pudo obtener el nick del usuario')
+
+        const siguiendo = await usuarioSigueAModel.getByNicknames(nickSeguidor, nickSeguido)
+        if (siguiendo)
+            return res.json({ siguiendo: true })
+        else
+            return res.json({ siguiendo: false })
+    }
+
+    static async seguirUsuario(req: Request, res: Response) {
+        const { nickSeguido } = req.body
+        const nickSeguidor = req.session?.user?.nickname
+
+        if (!nickSeguidor)
+            throw new Error('No se pudo obtener el nick del usuario')
+
+        const existe = await usuarioSigueAModel.getByNicknames(nickSeguidor, nickSeguido)
+        if (existe)
+            throw new Error('Ya sigues a este usuario')
+
+        const follow = await usuarioSigueAModel.create({
+            nickSeguidor: nickSeguidor,
+            nickSeguido: nickSeguido
+        })
+
+        const backURL = req.header('Referer') || '/feed'
+        return res.redirect(backURL)
     }
 
     static async dejarSeguirUsuario(req: Request, res: Response) {
-        const { nickSeguidor, nickSeguido } = req.body
-        return await usuarioSigueAModel.delete(nickSeguidor, nickSeguido)
+        const { nickSeguido } = req.body
+        const nickSeguidor = req.session?.user?.nickname
+
+        if (!nickSeguidor)
+            throw new Error('No se pudo obtener el nick del usuario')
+
+        const existe = await usuarioSigueAModel.getByNicknames(nickSeguidor, nickSeguido)
+        if (!existe)
+            throw new Error('No sigues a este usuario')
+
+        const unfollow = await usuarioSigueAModel.delete(nickSeguidor, nickSeguido)
+
+        const backURL = req.header('Referer') || '/feed'
+        return res.redirect(backURL)
     }
 
     static async listarSeguidores(req: Request, res: Response) {

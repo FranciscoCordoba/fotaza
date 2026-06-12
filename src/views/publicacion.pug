@@ -5,7 +5,19 @@ html
     body 
 
         h1 Publicacion #{publicacion.id}
-        p #{publicacion.nickUsuario} - #{publicacion.titulo}
+        p #{publicacion.nickUsuario} 
+
+        if publicacion.nickUsuario != nickUsuario
+            if siguiendo
+                form(action="/usuario/dejar_seguir" method="post")
+                    input(type="hidden" name="nickSeguido" value=publicacion.nickUsuario)
+                    button(type="submit") Dejar de seguir
+            else
+                form(action="/usuario/seguir" method="post")
+                    input(type="hidden" name="nickSeguido" value=publicacion.nickUsuario)
+                    button(type="submit") Seguir
+
+        h3 #{publicacion.titulo}
         p #{publicacion.descripcion}
 
         if etiquetas && etiquetas.length > 0

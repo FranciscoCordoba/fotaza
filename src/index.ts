@@ -19,56 +19,49 @@ app.use(cookieParser())
 
 import type { Request, Response, NextFunction } from "express";
 
+export const JWT_SECRET = process.env.JWT_SECRET || 'secretKey'
+
+const renovarToken = (refreshToken: string, req: Request, res: Response) => {
+    try {
+        const data: any = jwt.verify(refreshToken, JWT_SECRET)
+        req.session = req.session || {}
+        req.session.user = { nickname: data.nickname }
+
+        const newToken = jwt.sign({ nickname: data.nickname }, JWT_SECRET, {
+            expiresIn: '1h'
+        })
+
+        res.cookie('token', newToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict'
+        })
+    } catch {
+        // El refreshToken es inválido o expiró
+    }
+}
+
 app.use((req: Request, res: Response, next: NextFunction) => {
     const token = req.cookies.token
     const refreshToken = req.cookies.refreshToken
 
     req.session = {
-        user: { nickname: 'usuario1' }
+        user: null
     }
 
     if (token) {
         try {
-            const data = jwt.verify(token, 'secretKey')
+            const data = jwt.verify(token, JWT_SECRET)
             req.session.user = data as any
         } catch {
             // Si el token falló o expiró, intentamos con el refreshToken
             if (refreshToken) {
-                try {
-                    const data: any = jwt.verify(refreshToken, 'secretKey')
-                    req.session.user = { nickname: data.nickname }
-
-                    // Generamos un nuevo token de acceso automáticamente
-                    const newToken = jwt.sign({ nickname: data.nickname }, 'secretKey', {
-                        expiresIn: '1h'
-                    })
-
-                    res.cookie('token', newToken, {
-                        httpOnly: true,
-                        secure: true,
-                        sameSite: 'strict'
-                    })
-                } catch {
-                    // El refreshToken también es inválido o expiró
-                }
+                renovarToken(refreshToken, req, res)
             }
         }
     } else if (refreshToken) {
         // No hay token, pero sí refreshToken
-        try {
-            const data: any = jwt.verify(refreshToken, 'secretKey')
-            req.session.user = { nickname: data.nickname }
-
-            const newToken = jwt.sign({ nickname: data.nickname }, 'secretKey', {
-                expiresIn: '1h'
-            })
-
-            res.cookie('token', newToken, {
-                httpOnly: true,
-                secure: true,
-                sameSite: 'strict'
-            })
-        } catch { }
+        renovarToken(refreshToken, req, res)
     }
 
     next()
