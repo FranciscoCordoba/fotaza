@@ -27,5 +27,6 @@ router.get('/p/:id/:orden', publicacionController.getPublicacionByIdView)
 router.get('/crear', publicacionController.crearPublicacionView)
 router.get('/buscar', publicacionController.buscarPublicacionesView)
 router.post('/crear', upload.array('imagenes', 10), publicacionController.crearPublicacion)
+router.post('/imagen/:idImagen/valorar', publicacionController.valorarImagen)
 
 export default router

@@ -1,6 +1,7 @@
 import { publicacionModel } from "../models/publicacion.js";
 import { imagenModel } from "../models/imagen.js";
 import { etiquetaModel } from "../models/etiqueta.js";
+import { valoracionModel } from "../models/valoracion.js";
 import type { Request, Response } from "express";
 import type { publicacion } from "../utils/types.js";
 import { subirACaudinary } from "../utils/cloudinary.js";
@@ -38,7 +39,36 @@ export class publicacionController {
         const etiquetas = await etiquetaModel.getByIdPublicacion(publicacion.id)
         const { prev, post } = await imagenModel.getPrevYPost(publicacion.id, ordenNumero)
 
-        return res.render('publicacion', { publicacion, imagen, etiquetas, prev, post })
+        let statsValoracion = null
+        if (imagen) {
+            statsValoracion = await valoracionModel.getStatsByImage(imagen.id)
+        }
+
+        return res.render('publicacion', { publicacion, imagen, etiquetas, prev, post, statsValoracion })
+    }
+
+    static async valorarImagen(req: Request, res: Response) {
+        const { idImagen } = req.params
+        const { puntaje } = req.body
+
+        const idImagenNum = Number(idImagen)
+        const puntajeNum = Number(puntaje)
+
+        if (isNaN(idImagenNum) || isNaN(puntajeNum) || puntajeNum < 1 || puntajeNum > 5) {
+            throw new Error("Datos de valoracion invalidos")
+        }
+
+        // Asumimos que req.session.user esta disponible (o estatico)
+        const reqAny = req as any
+        const nickUsuario = reqAny.session?.user?.nickname
+        if (!nickUsuario) {
+            return res.redirect('/auth/login')
+        }
+
+        await valoracionModel.create(nickUsuario, idImagenNum, puntajeNum, false)
+
+        const backURL = req.header('Referer') || '/feed'
+        return res.redirect(backURL)
     }
 
     static async buscarPublicacionesView(req: Request, res: Response) {

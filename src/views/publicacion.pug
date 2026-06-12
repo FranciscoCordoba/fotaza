@@ -16,10 +16,25 @@ html
 
         div.imagen(style="margin-top: 15px;")
             if imagen
-                if prev
-                    a(href="/publicacion/p/" + publicacion.id + "/" + prev.orden, style="margin-top: 5px;") Anterior
-                img(src=imagen.url, alt=publicacion.titulo, style="max-width: 400px; border: 1px solid #ddd;")
-                if post
-                    a(href="/publicacion/p/" + publicacion.id + "/" + post.orden, style="margin-top: 5px;") Siguiente
+                div(style="display: flex; flex-direction: row; align-items: center; gap: 8px;")
+                    if prev
+                        a(href="/publicacion/p/" + publicacion.id + "/" + prev.orden, style="margin-top: 5px; margin-right: 10px;") ⬅️
+                    img(src=imagen.url, alt=publicacion.titulo, style="max-width: 400px; border: 1px solid #ddd; display: block; margin-top: 10px; margin-bottom: 10px;")
+                    if post
+                        a(href="/publicacion/p/" + publicacion.id + "/" + post.orden, style="margin-top: 5px;") ➡️
+                    
+                div(style="margin-top: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; display: inline-block;")
+                    if statsValoracion && statsValoracion.cantidad > 0
+                        p Promedio: <strong>#{statsValoracion.promedio} / 5</strong> (basado en #{statsValoracion.cantidad} votos)
+                    else
+                        p Sé el primero en valorar esta imagen.
+
+                    form(action="/publicacion/imagen/" + imagen.id + "/valorar" method="POST" style="margin-top: 10px;")
+                        div(style="display: flex; gap: 8px;")
+                            button(type="submit" name="puntaje" value="1" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 1 ⭐
+                            button(type="submit" name="puntaje" value="2" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 2 ⭐
+                            button(type="submit" name="puntaje" value="3" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 3 ⭐
+                            button(type="submit" name="puntaje" value="4" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 4 ⭐
+                            button(type="submit" name="puntaje" value="5" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 5 ⭐
             else
                 p(style="color: red;") No hay imagenes
