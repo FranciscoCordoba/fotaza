@@ -16,7 +16,7 @@ const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilt
 const upload = multer({
     storage: multer.memoryStorage(),
     limits: {
-        fileSize: 1024 * 1024 * 5 //limite de 5MB por imagen
+        fileSize: 1024 * 1024 * 4 //limite de 4MB por imagen (Vercel max 4.5MB payload)
     },
     fileFilter: fileFilter
 })
