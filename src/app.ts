@@ -4,7 +4,7 @@ import authRouter from './routes/auth.js'
 import publicacionRouter from './routes/publicacion.js'
 import feedRouter from './routes/feed.js'
 
-const PORT = process.env.PORT || 3001
+const PORT = process.env.PORT || 3000
 
 app.get('/', (req, res) => {
     if (req?.session?.user)
