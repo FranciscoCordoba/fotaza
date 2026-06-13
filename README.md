@@ -15,7 +15,7 @@ Importante: La aplicación debe ejecutarse en el siguiente orden.
 
 1. **Clonar el repositorio**:
    ```bash
-   git clone <URL_DEL_REPOSITORIO>
+   git clone https://github.com/FranciscoCordoba/fotaza.git
    cd fotaza
    ```
 
@@ -52,12 +52,7 @@ Importante: La aplicación debe ejecutarse en el siguiente orden.
 
 ## Usuarios de prueba e información
 
-Para probar la plataforma puedes registrar a nuevos usuarios desde `http://localhost:3000/auth/registro`, o bien utilizar las siguientes credenciales (si la base de datos ya cuenta con información precargada):
-- **Nickname:** `usuario1`
-- **Contraseña:** `123456`
-
-- **Nickname:** `usuario2`
-- **Contraseña:** `123456`
+Para probar la plataforma puedes registrar a nuevos usuarios desde `http://localhost:3000/auth/registro` (aun sin seed)
 
 ## Módulos y Requisitos Cumplidos
 - **Creación de publicación:** Subida de archivo limitando peso a 4MB y enviándolo directamente a Cloudinary.
