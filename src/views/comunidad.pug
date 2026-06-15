@@ -1,0 +1,37 @@
+html 
+    head 
+        title #{comunidad.titulo} - Comunidad
+    body 
+        div(style="border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px;")
+            h1 Comunidad: #{comunidad.titulo}
+            p
+                strong Nickname: 
+                | #{comunidad.nickComunidad}
+            if comunidad.imagen
+                img(src=comunidad.imagen, alt=comunidad.titulo, style="width: 150px; display: block; margin-bottom: 10px;")
+            if comunidad.descripcion
+                p
+                    strong Descripción: 
+                    | #{comunidad.descripcion}
+            if comunidad.normas
+                p
+                    strong Normas: 
+                    | #{comunidad.normas}
+
+        h2 Publicaciones en #{comunidad.titulo}
+
+        if publicaciones && publicaciones.length > 0
+            .publicaciones
+                each publicacion in publicaciones 
+                    div.publicacion(style="border:1px solid black; margin: 5px; padding: 10px;")
+                        p #{publicacion.nickUsuario} - #{publicacion.titulo}
+                        p #{publicacion.descripcion}
+                        if publicacion.etiquetas && publicacion.etiquetas.length > 0
+                            p(style="margin: 5px 0; font-size: 0.85em; color: #666;")
+                                each etiqueta in publicacion.etiquetas
+                                    span(style="margin-right: 5px; background-color: #f0f0f0; padding: 2px 6px; border-radius: 4px; display: inline-block;") ##{etiqueta.etiqueta}
+                        if publicacion.imagen
+                            img(src=publicacion.imagen.url, alt=publicacion.titulo, style="width: 200px; display: block; margin-top: 5px;")
+                        button(onclick="window.location.href = '/publicacion/p/" + publicacion.id + "/1'", style="margin-top: 5px;") Ver
+        else 
+            p Aún no hay publicaciones en esta comunidad.

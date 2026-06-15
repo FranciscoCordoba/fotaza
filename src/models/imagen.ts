@@ -24,12 +24,12 @@ export class imagenModel {
         return nuevaImagen
     }
 
-    static async getByPublicacionId(idPublicacion: number) {
+    static async getByIdPublicacion(idPublicacion: number) {
         const imagenes = await db.select().from(imagenTable).where(eq(imagenTable.idPublicacion, idPublicacion))
         return imagenes
     }
 
-    static async getByPublicacionIdAndOrden(idPublicacion: number, orden: number) {
+    static async getByIdPublicacionAndOrden(idPublicacion: number, orden: number) {
         const imagen = await db.select().from(imagenTable).where(and(eq(imagenTable.idPublicacion, idPublicacion), eq(imagenTable.orden, orden)))
         return imagen[0]
     }

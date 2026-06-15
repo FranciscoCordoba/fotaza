@@ -2,7 +2,7 @@ import { boolean, date, pgTable, varchar, serial, integer } from "drizzle-orm/pg
 
 export const rolTable = pgTable('rol', {
     id: serial().primaryKey(),
-    nombre: varchar({ length: 100 }).notNull(),
+    nombre: varchar({ length: 100 }).unique().notNull(),
 })
 
 export const usuarioTable = pgTable('usuario', {

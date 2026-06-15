@@ -37,7 +37,7 @@ export class publicacionController {
         if (isNaN(ordenNumero))
             throw new Error("Orden invalido")
 
-        const imagen = await imagenModel.getByPublicacionIdAndOrden(publicacion.id, ordenNumero)
+        const imagen = await imagenModel.getByIdPublicacionAndOrden(publicacion.id, ordenNumero)
         const etiquetas = await etiquetaModel.getByIdPublicacion(publicacion.id)
         const { prev, post } = await imagenModel.getPrevYPost(publicacion.id, ordenNumero)
 
@@ -103,7 +103,7 @@ export class publicacionController {
         const publicaciones = await publicacionModel.getByTitulo(busqueda)
 
         const publicacionesConDatos = await Promise.all(publicaciones.map(async publicacion => {
-            const imagen = await imagenModel.getByPublicacionIdAndOrden(publicacion.id, 1)
+            const imagen = await imagenModel.getByIdPublicacionAndOrden(publicacion.id, 1)
             const etiquetas = await etiquetaModel.getByIdPublicacion(publicacion.id)
             return {
                 ...publicacion,

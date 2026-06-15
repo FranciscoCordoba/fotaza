@@ -1,0 +1,23 @@
+html 
+    head 
+        title Crear Comunidad 
+
+    body 
+        h1 Crear una nueva comunidad
+        form(action="/comunidad/crear", method="POST", enctype="multipart/form-data")
+            label(for="nickComunidad") Nick de la Comunidad (único, ej: fotografia_digital):
+            input(type="text", name="nickComunidad", id="nickComunidad", required)
+            br
+            label(for="titulo") Título de la Comunidad:
+            input(type="text", name="titulo", id="titulo", required)
+            br
+            label(for="descripcion") Descripción:
+            textarea(name="descripcion", id="descripcion", rows="4", cols="50")
+            br
+            label(for="normas") Normas de la Comunidad:
+            textarea(name="normas", id="normas", rows="4", cols="50")
+            br
+            label(for="imagen") Imagen (Logo/Banner - Máx 4MB):
+            input(type="file", name="imagen", accept="image/*", id="imagen")
+            br
+            button(type="submit") Crear Comunidad

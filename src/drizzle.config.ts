@@ -8,7 +8,7 @@ try {
 
 export default defineConfig({
     out: '../drizzle',
-    schema: './db/schemas',
+    schema: './src/db/schemas',
     dialect: 'postgresql',
     dbCredentials: {
         url: process.env.DATABASE_URL!,

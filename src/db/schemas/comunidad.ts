@@ -2,9 +2,9 @@ import { date, pgTable, varchar } from "drizzle-orm/pg-core";
 
 export const comunidadTable = pgTable('comunidad', {
     nickComunidad: varchar('nick_comunidad', { length: 100 }).primaryKey(),
-    nombre: varchar('nombre', { length: 100 }).notNull(),
-    descripcion: varchar('descripcion', { length: 255 }),
-    imagen: varchar('imagen', { length: 255 }),
-    normas: varchar('normas', { length: 500 }),
+    titulo: varchar({ length: 100 }).notNull(),
+    descripcion: varchar({ length: 255 }).default(''),
+    imagen: varchar({ length: 255 }),
+    normas: varchar({ length: 500 }).default(''),
     createdAt: date('created_at').defaultNow().notNull()
 })

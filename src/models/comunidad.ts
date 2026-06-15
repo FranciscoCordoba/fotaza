@@ -10,14 +10,14 @@ export class comunidadModel {
     }
 
     static async getByNickname(nickComunidad: string) {
-        const comunidades = await db.select().from(comunidadTable).where(eq(comunidadTable.nickComunidad, nickComunidad))
-        return comunidades
+        const comunidad = await db.select().from(comunidadTable).where(eq(comunidadTable.nickComunidad, nickComunidad))
+        return comunidad[0]
     }
 
-    static async create(nickComunidad: string, nombre: string, descripcion: string, imagen: string, normas: string) {
+    static async create(nickComunidad: string, titulo: string, descripcion: string, imagen: string, normas: string) {
         const nuevaComunidad = await db.insert(comunidadTable).values({
             nickComunidad,
-            nombre,
+            titulo,
             descripcion,
             imagen,
             normas
