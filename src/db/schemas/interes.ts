@@ -1,11 +1,10 @@
-import { boolean, foreignKey, integer, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
+import { foreignKey, integer, pgTable, primaryKey, varchar } from "drizzle-orm/pg-core";
 import { usuarioTable } from "./usuario.js";
 import { imagenTable } from "./imagen.js";
 
-export const valoracionTable = pgTable('valoracion', {
+export const interesTable = pgTable('interes', {
     nickUsuario: varchar('nick_usuario', { length: 100 }).notNull(),
     idImagen: integer('id_imagen').notNull(),
-    valoracion: integer().notNull(),
 }, (table) => [
     primaryKey({ columns: [table.nickUsuario, table.idImagen] }),
     foreignKey({

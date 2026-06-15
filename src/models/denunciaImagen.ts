@@ -13,11 +13,12 @@ export class denunciaImagenModel {
         return denuncias
     }
 
-    static async create(nickUsuario: string, idImagen: number, motivo: string) {
+    static async create(nickUsuario: string, idImagen: number, motivo: string, idEvaluacion: number) {
         const nuevaDenuncia = await db.insert(denunciaImagenTable).values({
             nickUsuario,
             idImagen,
-            motivo
+            motivo,
+            idEvaluacion
         }).returning()
         return nuevaDenuncia
     }

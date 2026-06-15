@@ -71,7 +71,7 @@ export class publicacionController {
 
         const nickUsuario = req.session?.user?.nickname
 
-        await valoracionModel.create(nickUsuario!, idImagenNum, puntajeNum, false)
+        await valoracionModel.create(nickUsuario!, idImagenNum, puntajeNum)
 
         const backURL = req.header('Referer') || '/feed'
         return res.redirect(backURL)

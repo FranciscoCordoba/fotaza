@@ -14,15 +14,14 @@ export class valoracionModel {
         return valoraciones
     }
 
-    static async create(nickUsuario: string, idImagen: number, valoracion: number, interes: boolean) {
+    static async create(nickUsuario: string, idImagen: number, valoracion: number) {
         const nuevaValoracion = await db.insert(valoracionTable).values({
             nickUsuario,
             idImagen,
-            valoracion,
-            interes
+            valoracion
         }).onConflictDoUpdate({
             target: [valoracionTable.nickUsuario, valoracionTable.idImagen],
-            set: { valoracion, interes }
+            set: { valoracion }
         }).returning()
         return nuevaValoracion
     }
