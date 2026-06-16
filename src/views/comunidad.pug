@@ -7,6 +7,16 @@ html
             p
                 strong Nickname: 
                 | #{comunidad.nickComunidad}
+
+            if siguiendo
+                form(action=`/comunidad/${comunidad.nickComunidad}/dejar-seguir`, method="POST", style="display: inline-block;")
+                    button(type="submit") Dejar de Seguir
+            else
+                form(action=`/comunidad/${comunidad.nickComunidad}/seguir`, method="POST", style="display: inline-block;")
+                    button(type="submit") Seguir
+            br
+            br
+
             if comunidad.imagen
                 img(src=comunidad.imagen, alt=comunidad.titulo, style="width: 150px; display: block; margin-bottom: 10px;")
             if comunidad.descripcion

@@ -6,5 +6,6 @@ const router = Router()
 
 router.get('/', feedController.getAll)
 router.get('/siguiendo', requiresAuth, feedController.getFollowingFeed)
+router.get('/comunidades', requiresAuth, feedController.getComunidadesFeed)
 
 export default router

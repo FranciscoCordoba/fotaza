@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, or, ilike } from "drizzle-orm";
 import { comunidadTable } from "../db/schemas/comunidad.js";
 import { db } from "../index.js";
 
@@ -12,6 +12,16 @@ export class comunidadModel {
     static async getByNickname(nickComunidad: string) {
         const comunidad = await db.select().from(comunidadTable).where(eq(comunidadTable.nickComunidad, nickComunidad))
         return comunidad[0]
+    }
+
+    static async search(busqueda: string) {
+        const comunidades = await db.select().from(comunidadTable).where(
+            or(
+                ilike(comunidadTable.nickComunidad, `%${busqueda}%`),
+                ilike(comunidadTable.titulo, `%${busqueda}%`)
+            )
+        )
+        return comunidades
     }
 
     static async create(nickComunidad: string, titulo: string, descripcion: string, imagen: string, normas: string) {

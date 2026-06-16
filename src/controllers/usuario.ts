@@ -140,8 +140,8 @@ export class usuarioController {
             throw new Error('Ya sigues a este usuario')
 
         const follow = await usuarioSigueAModel.create({
-            nickSeguidor: nickSeguidor,
-            nickSeguido: nickSeguido
+            nickSeguidor,
+            nickSeguido
         })
 
         const backURL = req.header('Referer') || '/feed'

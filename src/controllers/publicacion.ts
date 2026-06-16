@@ -4,6 +4,7 @@ import { etiquetaModel } from "../models/etiqueta.js";
 import { valoracionModel } from "../models/valoracion.js";
 import { comentarioModel } from "../models/comentario.js";
 import { usuarioSigueAModel } from "../models/usuarioSigueA.js";
+import { comunidadModel } from "../models/comunidad.js";
 import type { Request, Response } from "express";
 import type { publicacion } from "../utils/types.js";
 import { subirACaudinary } from "../utils/cloudinary.js";
@@ -101,6 +102,7 @@ export class publicacionController {
             throw new Error("Busqueda invalida")
 
         const publicaciones = await publicacionModel.getByTitulo(busqueda)
+        const comunidades = await comunidadModel.search(busqueda)
 
         const publicacionesConDatos = await Promise.all(publicaciones.map(async publicacion => {
             const imagen = await imagenModel.getByIdPublicacionAndOrden(publicacion.id, 1)
@@ -112,7 +114,7 @@ export class publicacionController {
             }
         }))
 
-        return res.render('explorador', { publicacionesConDatos })
+        return res.render('explorador', { publicacionesConDatos, comunidades })
     }
 
     static async crearPublicacionView(req: Request, res: Response) {

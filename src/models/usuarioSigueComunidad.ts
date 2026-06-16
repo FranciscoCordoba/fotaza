@@ -14,6 +14,16 @@ export class usuarioSigueComunidadModel {
         return suscripciones
     }
 
+    static async getByNicknames(nickUsuario: string, nickComunidad: string) {
+        const suscripcion = await db.select().from(usuarioSigueComunidadTable).where(
+            and(
+                eq(usuarioSigueComunidadTable.nickUsuario, nickUsuario),
+                eq(usuarioSigueComunidadTable.nickComunidad, nickComunidad)
+            )
+        )
+        return suscripcion[0]
+    }
+
     static async getByComunidad(nickComunidad: string) {
         const suscripciones = await db.select().from(usuarioSigueComunidadTable).where(eq(usuarioSigueComunidadTable.nickComunidad, nickComunidad))
         return suscripciones

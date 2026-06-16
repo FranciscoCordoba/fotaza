@@ -20,7 +20,19 @@ html
                                 span(style="margin: 0 5px 0 0;")= "#" + etiqueta.etiqueta
                         a(href="/publicacion/p/" + publicacion.id + "/1", style="margin-top: 5px;") Ver publicacion
             //div#cuentas
-            //div#comunidades
-
+            div#comunidades
+                if comunidades && comunidades.length > 0
+                    h1 Comunidades
+                    each comunidad in comunidades
+                        div(style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;")
+                            h2= comunidad.titulo
+                            p
+                                strong Nickname: 
+                                | #{comunidad.nickComunidad}
+                            if comunidad.descripcion
+                                p= comunidad.descripcion
+                            if comunidad.imagen
+                                img(src=comunidad.imagen, alt=comunidad.titulo, style="width: 100px; display: block; margin-top: 5px; margin-bottom: 5px;")
+                            button(onclick="window.location.href = '/comunidad/" + comunidad.nickComunidad + "'") Ir al perfil de la comunidad
 
         //aca deberian ir las PUBLICACIONES - CUENTAS - COMUNIDADES
