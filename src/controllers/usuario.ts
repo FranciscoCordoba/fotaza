@@ -3,6 +3,8 @@ import { usuarioModel } from "../models/usuario.js";
 import type { Request, Response } from "express";
 import type { mensajeInsert, usuarioInsert, usuarioSigueA, usuarioSigueAInsert } from "../utils/types.js";
 import { mensajeModel } from "../models/mensaje.js";
+import { publicacionModel } from "../models/publicacion.js";
+import { imagenModel } from "../models/imagen.js";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 
@@ -13,6 +15,48 @@ export class usuarioController {
     static async allUsers(req: Request, res: Response) {
         const usuarios = await usuarioModel.getAll()
         return res.json(usuarios)
+    }
+
+    static async perfilUsuario(req: Request, res: Response) {
+        const { nickname } = req.params;
+
+        if (!nickname || nickname === '' || typeof nickname !== 'string')
+            throw new Error('Debe indicar un usuario')
+
+        const perfil = await usuarioModel.getByNickname(nickname);
+        if (!perfil) {
+            throw new Error('Usuario no encontrado');
+        }
+
+        const publicaciones = await publicacionModel.getByNickUsuario(nickname);
+        const publicacionesConDatos = await Promise.all(publicaciones.map(async publicacion => {
+            const imagen = await imagenModel.getByIdPublicacionAndOrden(publicacion.id, 1)
+            return {
+                ...publicacion,
+                imagen
+            }
+        }));
+
+        const nickUsuarioLogueado = req.session?.user?.nickname;
+        let esPropio = false;
+        let siguiendo = false;
+
+        if (nickUsuarioLogueado === nickname) {
+            esPropio = true;
+        } else if (nickUsuarioLogueado) {
+            const follow = await usuarioSigueAModel.getByNicknames(nickUsuarioLogueado, nickname);
+            if (follow) {
+                siguiendo = true;
+            }
+        }
+
+        return res.render('perfil', {
+            perfil,
+            publicaciones: publicacionesConDatos,
+            esPropio,
+            siguiendo,
+            nickUsuarioLogueado
+        });
     }
 
     static async loginUsuarioView(req: Request, res: Response) {

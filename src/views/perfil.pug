@@ -1,9 +1,29 @@
 html 
     head 
-        title Perfil
-
+        title Perfil de #{perfil.nickname}
     body 
-        //include sidebar.pug
+        h1 Perfil de #{perfil.nickname}
 
-        
-        
+        if !esPropio && nickUsuarioLogueado
+            if siguiendo
+                form(action="/usuario/dejar_seguir", method="POST")
+                    input(type="hidden", name="nickSeguido", value=perfil.nickname)
+                    button(type="submit") Dejar de Seguir
+            else
+                form(action="/usuario/seguir", method="POST")
+                    input(type="hidden", name="nickSeguido", value=perfil.nickname)
+                    button(type="submit") Seguir
+
+        h2 Publicaciones 
+        if publicaciones && publicaciones.length > 0
+            ul
+                each pub in publicaciones
+                    li 
+                        h3= pub.titulo
+                        p= pub.descripcion
+                        if pub.imagen
+                            img(src=pub.imagen.url, alt=pub.titulo, width="200")
+                            br
+                        a(href=`/publicacion/${pub.id}/1`) Ver publicacion
+        else 
+            p Este usuario no tiene publicaciones.

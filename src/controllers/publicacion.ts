@@ -8,6 +8,8 @@ import { comunidadModel } from "../models/comunidad.js";
 import type { Request, Response } from "express";
 import type { publicacion } from "../utils/types.js";
 import { subirACaudinary } from "../utils/cloudinary.js";
+import { usuarioSigueComunidadModel } from "../models/usuarioSigueComunidad.js";
+import { publicacionEnComunidadModel } from "../models/publicacionEnComunidad.js";
 
 export class publicacionController {
     static async getPublicacionById(req: Request, res: Response) {
@@ -118,7 +120,12 @@ export class publicacionController {
     }
 
     static async crearPublicacionView(req: Request, res: Response) {
-        return res.render('nueva-publicacion')
+        const nickUsuario = req.session?.user?.nickname
+        let comunidadesSigue: any[] = []
+        if (nickUsuario) {
+            comunidadesSigue = await usuarioSigueComunidadModel.getByNickname(nickUsuario)
+        }
+        return res.render('nueva-publicacion', { comunidadesSigue })
     }
 
     static async crearPublicacion(req: Request, res: Response) {
@@ -159,6 +166,15 @@ export class publicacionController {
                 const saveTagPromises = listaEtiquetas.map(tag => etiquetaModel.create(idPublicacion, tag))
                 await Promise.all(saveTagPromises)
             }
+        }
+
+        const comunidades = req.body.comunidades
+        if (comunidades) {
+            const listaComunidades = Array.isArray(comunidades) ? comunidades : [comunidades]
+            const saveComunidadesPromises = listaComunidades.map(nickComunidad => 
+                publicacionEnComunidadModel.create(nickComunidad, idPublicacion)
+            )
+            await Promise.all(saveComunidadesPromises)
         }
 
         return res.redirect('/feed')

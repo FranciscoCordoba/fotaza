@@ -14,5 +14,6 @@ router.post('/dejar_seguir', usuarioController.dejarSeguirUsuario)
 
 // router.post('/enviar_mensaje', usuarioController.enviarMensaje)
 
+router.get('/perfil/:nickname', usuarioController.perfilUsuario)
 
 export default router

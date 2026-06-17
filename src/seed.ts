@@ -1,18 +1,16 @@
 import { db } from "./index.js";
-import { rolTable } from "./db/schemas/usuario.js";
-import { evaluacionTable } from "./db/schemas/denunciaImagen.js";
+import { motivoDenunciaTable } from "./db/schemas/denunciaImagen.js";
 
 try {
-    db.insert(rolTable).values([
-        { nombre: 'usuario' },
-        { nombre: 'moderador' }
-    ]).onConflictDoNothing()
+    const motivosDenuncia = [
+        { motivo: "Contenido inapropiado" },
+        { motivo: "Spam" },
+        { motivo: "Acoso" },
+        { motivo: "Contenido violento" },
+        { motivo: "Otro" }
+    ]
 
-    db.insert(evaluacionTable).values([
-        { estado: 'pendiente' },
-        { estado: 'aceptada' },
-        { estado: 'rechazada' }
-    ]).onConflictDoNothing()
+    await db.insert(motivoDenunciaTable).values(motivosDenuncia).onConflictDoNothing()
 
     console.log('Seed realizado exitosamente')
 } catch (e) {

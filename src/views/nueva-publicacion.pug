@@ -17,4 +17,11 @@ html
             label(for="etiquetas") Etiquetas (separadas por espacio y con #):
             input(type="text", name="etiquetas", id="etiquetas", placeholder="ej: #naturaleza #playa #sol")
             br
+            if comunidadesSigue && comunidadesSigue.length > 0
+                label Compartir en comunidades:
+                br
+                each comunidad in comunidadesSigue
+                    input(type="checkbox", name="comunidades", value=comunidad.nickComunidad, id=`comunidad-${comunidad.nickComunidad}`)
+                    label(for=`comunidad-${comunidad.nickComunidad}`)= comunidad.nickComunidad
+                    br
             button Enviar

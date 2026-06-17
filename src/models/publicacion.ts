@@ -25,6 +25,11 @@ export class publicacionModel {
         return publicaciones
     }
 
+    static async getByNickUsuario(nickUsuario: string) {
+        const publicaciones = await db.select().from(publicacionTable).where(eq(publicacionTable.nickUsuario, nickUsuario))
+        return publicaciones
+    }
+
     static async create(nickUsuario: string, titulo: string, descripcion: string) {
         const nuevaPublicacion = await db.insert(publicacionTable).values({
             nickUsuario,
