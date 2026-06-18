@@ -1,0 +1,29 @@
+html 
+    head 
+        title Denunciar Imagen 
+    body 
+        h1 Denunciar Imagen
+        
+        if yaDenunciado
+            p(style="color: red;") Ya has denunciado esta imagen.
+            button(onclick="window.location.href = '/publicacion/p/" + publicacion.id + "/" + imagen.orden + "'") Volver a la publicación
+        else
+            div(style="margin-bottom: 15px;")
+                p Estás a punto de denunciar la siguiente imagen:
+                img(src=imagen.url, alt="Imagen a denunciar", style="max-width: 300px; border: 1px solid black; display: block; margin-top: 10px;")
+            
+            form(action="/publicacion/imagen/" + imagen.id + "/denunciar", method="POST")
+                div(style="margin-bottom: 10px;")
+                    label(for="idMotivo") Motivo de la denuncia:
+                    br
+                    select(name="idMotivo" required style="padding: 5px; margin-top: 5px;")
+                        each motivo in motivos
+                            option(value=motivo.id) #{motivo.motivo}
+                
+                div(style="margin-bottom: 15px;")
+                    label(for="descripcion") Descripción (opcional):
+                    br
+                    textarea(name="descripcion" rows="4" style="width: 100%; max-width: 400px; padding: 5px; margin-top: 5px;" placeholder="Proporciona más detalles...")
+                
+                button(type="submit" style="color: white; background-color: red; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; margin-right: 10px;") Confirmar Denuncia
+                button(type="button" onclick="window.location.href = '/publicacion/p/" + publicacion.id + "/" + imagen.orden + "'" style="padding: 8px 16px; border-radius: 4px; cursor: pointer;") Cancelar

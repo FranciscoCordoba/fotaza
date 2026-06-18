@@ -35,11 +35,17 @@ html
                     if post
                         a(href="/publicacion/p/" + publicacion.id + "/" + post.orden, style="margin-top: 5px;") ➡️
                     
+                if publicacion.nickUsuario != nickUsuario
+                    div(style="margin-top: 5px;")
+                        button(onclick="window.location.href = '/publicacion/imagen/" + imagen.id + "/denunciar'" style="color: red; border: 1px solid red; background: white; padding: 4px 8px; border-radius: 4px; cursor: pointer;") Denunciar Imagen
+                    
                 div(style="margin-top: 15px; padding: 10px; border: 1px solid black; border-radius: 4px; display: inline-block;")
                     if statsValoracion && statsValoracion.cantidad > 0
                         p Promedio: <strong>#{statsValoracion.promedio} / 5</strong> (basado en #{statsValoracion.cantidad} votos)
                     else if publicacion.nickUsuario != nickUsuario
                         p Sé el primero en valorar esta imagen.
+                    else
+                        p Aún no hay valoraciones.
 
                     if publicacion.nickUsuario != nickUsuario
                         form(action="/publicacion/imagen/" + imagen.id + "/valorar" method="POST" style="margin-top: 10px;")

@@ -11,6 +11,7 @@ import { subirACaudinary } from "../utils/cloudinary.js";
 import { usuarioSigueComunidadModel } from "../models/usuarioSigueComunidad.js";
 import { publicacionEnComunidadModel } from "../models/publicacionEnComunidad.js";
 import { denunciaComentarioModel } from "../models/denunciaComentario.js";
+import { denunciaImagenModel } from "../models/denunciaImagen.js";
 
 export class publicacionController {
     static async getPublicacionById(req: Request, res: Response) {
@@ -219,5 +220,60 @@ export class publicacionController {
         await denunciaComentarioModel.create(nickUsuario, idComentarioNum)
         const backURL = req.header('Referer') || '/feed'
         return res.redirect(backURL)
+    }
+
+    static async denunciarImagenView(req: Request, res: Response) {
+        const { idImagen } = req.params;
+        const idImagenNum = Number(idImagen);
+        if (isNaN(idImagenNum)) throw new Error("Datos invalidos");
+
+        const nickUsuario = req.session?.user?.nickname;
+        if (!nickUsuario) throw new Error("Usuario no logueado");
+
+        const imagen = await imagenModel.getById(idImagenNum);
+        if (!imagen) throw new Error("Imagen no encontrada");
+
+        const publicacion = await publicacionModel.getById(imagen.idPublicacion);
+        if (publicacion?.nickUsuario === nickUsuario) {
+            throw new Error("No puedes denunciar tu propia imagen");
+        }
+
+        const denunciaExistente = await denunciaImagenModel.getByUsuarioAndImagen(nickUsuario, idImagenNum);
+        const yaDenunciado = !!denunciaExistente;
+
+        const motivos = await denunciaImagenModel.getMotivos();
+
+        return res.render('denunciar-imagen', {
+            imagen,
+            publicacion,
+            motivos,
+            yaDenunciado
+        });
+    }
+
+    static async denunciarImagenPost(req: Request, res: Response) {
+        const { idImagen } = req.params;
+        const { idMotivo, descripcion } = req.body;
+        const idImagenNum = Number(idImagen);
+        const idMotivoNum = Number(idMotivo);
+
+        if (isNaN(idImagenNum) || isNaN(idMotivoNum)) {
+            throw new Error("Datos invalidos");
+        }
+
+        const nickUsuario = req.session?.user?.nickname;
+        if (!nickUsuario) throw new Error("Usuario no logueado");
+
+        const imagen = await imagenModel.getById(idImagenNum);
+        if (!imagen) throw new Error("Imagen no encontrada");
+
+        const denunciaExistente = await denunciaImagenModel.getByUsuarioAndImagen(nickUsuario, idImagenNum);
+        if (denunciaExistente) {
+            throw new Error("Ya has denunciado esta imagen");
+        }
+
+        await denunciaImagenModel.create(nickUsuario, idImagenNum, idMotivoNum, descripcion);
+
+        return res.redirect(`/publicacion/p/${imagen.idPublicacion}/${imagen.orden}`);
     }
 }
