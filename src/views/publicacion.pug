@@ -38,19 +38,25 @@ html
                 div(style="margin-top: 15px; padding: 10px; border: 1px solid black; border-radius: 4px; display: inline-block;")
                     if statsValoracion && statsValoracion.cantidad > 0
                         p Promedio: <strong>#{statsValoracion.promedio} / 5</strong> (basado en #{statsValoracion.cantidad} votos)
-                    else
+                    else if publicacion.nickUsuario != nickUsuario
                         p Sé el primero en valorar esta imagen.
 
-                    form(action="/publicacion/imagen/" + imagen.id + "/valorar" method="POST" style="margin-top: 10px;")
-                        div(style="display: flex; gap: 8px;")
-                            button(type="submit" name="puntaje" value="1" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 1 ⭐
-                            button(type="submit" name="puntaje" value="2" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 2 ⭐
-                            button(type="submit" name="puntaje" value="3" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 3 ⭐
-                            button(type="submit" name="puntaje" value="4" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 4 ⭐
-                            button(type="submit" name="puntaje" value="5" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 5 ⭐
+                    if publicacion.nickUsuario != nickUsuario
+                        form(action="/publicacion/imagen/" + imagen.id + "/valorar" method="POST" style="margin-top: 10px;")
+                            div(style="display: flex; gap: 8px;")
+                                button(type="submit" name="puntaje" value="1" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 1 ⭐
+                                button(type="submit" name="puntaje" value="2" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 2 ⭐
+                                button(type="submit" name="puntaje" value="3" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 3 ⭐
+                                button(type="submit" name="puntaje" value="4" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 4 ⭐
+                                button(type="submit" name="puntaje" value="5" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 5 ⭐
                 
                 div(style="margin-top: 20px; padding: 15px; border: 1px solid black; border-radius: 4px;")
                     h3 Comentarios
+                    if publicacion.nickUsuario == nickUsuario
+                        form(action="/publicacion/imagen/" + imagen.id + "/toggle-comentarios" method="POST" style="margin-bottom: 15px;")
+                            input(type="hidden" name="comentariosActivos" value=imagen.comentariosActivos ? 'false' : 'true')
+                            button(type="submit" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") #{imagen.comentariosActivos ? 'Desactivar Comentarios' : 'Activar Comentarios'}
+
                     if comentarios && comentarios.length > 0
                         ul(style="list-style-type: none; padding: 0;")
                             each comentario in comentarios
@@ -58,12 +64,20 @@ html
                                     strong #{comentario.nickUsuario} 
                                     span(style="color: #666;") - #{new Date(comentario.createdAt).toLocaleDateString()}
                                     p(style="margin: 5px 0 0 0;") #{comentario.texto}
+                                    if comentario.nickUsuario != publicacion.nickUsuario && comentario.nickUsuario != nickUsuario
+                                        form(action="/publicacion/comentario/" + comentario.id + "/denunciar" method="POST" style="margin-top: 5px; display: inline-block;")
+                                            button(type="submit" style="color: red; border: none; background: none; cursor: pointer; text-decoration: underline;") Denunciar
                     else
                         p(style="color: #666;") Aún no hay comentarios. ¡Sé el primero!
 
-                    form(action="/publicacion/imagen/" + imagen.id + "/comentar" method="POST" style="margin-top: 15px;")
-                        textarea(name="texto" rows="3" style="width: 100%; max-width: 400px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" placeholder="Escribe tu comentario aquí..." required)
-                        br
-                        button(type="submit" style="margin-top: 5px; padding: 6px 15px; border-radius: 4px;") Enviar comentario
+                    if imagen.comentariosActivos
+                        form(action="/publicacion/imagen/" + imagen.id + "/comentar" method="POST" style="margin-top: 15px;")
+                            textarea(name="texto" rows="3" style="width: 100%; max-width: 400px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" placeholder="Escribe tu comentario aquí..." required)
+                            br
+                            button(type="submit" style="margin-top: 5px; padding: 6px 15px; border-radius: 4px;") Enviar comentario
+                    else
+                        p(style="color: red; margin-top: 15px;") Los comentarios están desactivados para esta imagen.
+
+
             else
                 p(style="color: red;") No hay imagenes

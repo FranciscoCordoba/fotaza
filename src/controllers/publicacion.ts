@@ -10,6 +10,7 @@ import type { publicacion } from "../utils/types.js";
 import { subirACaudinary } from "../utils/cloudinary.js";
 import { usuarioSigueComunidadModel } from "../models/usuarioSigueComunidad.js";
 import { publicacionEnComunidadModel } from "../models/publicacionEnComunidad.js";
+import { denunciaComentarioModel } from "../models/denunciaComentario.js";
 
 export class publicacionController {
     static async getPublicacionById(req: Request, res: Response) {
@@ -171,12 +172,52 @@ export class publicacionController {
         const comunidades = req.body.comunidades
         if (comunidades) {
             const listaComunidades = Array.isArray(comunidades) ? comunidades : [comunidades]
-            const saveComunidadesPromises = listaComunidades.map(nickComunidad => 
+            const saveComunidadesPromises = listaComunidades.map(nickComunidad =>
                 publicacionEnComunidadModel.create(nickComunidad, idPublicacion)
             )
             await Promise.all(saveComunidadesPromises)
         }
 
         return res.redirect('/feed')
+    }
+
+    static async toggleComentariosImagen(req: Request, res: Response) {
+        const { idImagen } = req.params
+        const { comentariosActivos } = req.body
+        const idImagenNum = Number(idImagen)
+        if (isNaN(idImagenNum)) {
+            throw new Error("Datos invalidos")
+        }
+
+        const imagen = await imagenModel.getById(idImagenNum)
+        if (!imagen) throw new Error("Imagen no encontrada")
+
+        const publicacion = await publicacionModel.getById(imagen.idPublicacion)
+        const nickUsuario = req.session?.user?.nickname
+
+        if (publicacion?.nickUsuario !== nickUsuario) {
+            throw new Error("No tienes permiso")
+        }
+
+        await imagenModel.toggleComentariosActivos(idImagenNum, comentariosActivos === 'true')
+        const backURL = req.header('Referer') || '/feed'
+        return res.redirect(backURL)
+    }
+
+    static async denunciarComentario(req: Request, res: Response) {
+        const { idComentario } = req.params
+        const idComentarioNum = Number(idComentario)
+        if (isNaN(idComentarioNum)) {
+            throw new Error("Datos invalidos")
+        }
+
+        const nickUsuario = req.session?.user?.nickname
+        if (!nickUsuario) {
+            throw new Error("Usuario no logueado")
+        }
+
+        await denunciaComentarioModel.create(nickUsuario, idComentarioNum)
+        const backURL = req.header('Referer') || '/feed'
+        return res.redirect(backURL)
     }
 }

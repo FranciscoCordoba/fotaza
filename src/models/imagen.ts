@@ -45,4 +45,9 @@ export class imagenModel {
         return imagenEliminada
     }
 
+    static async toggleComentariosActivos(id: number, activo: boolean) {
+        const imagenActualizada = await db.update(imagenTable).set({ comentariosActivos: activo }).where(eq(imagenTable.id, id)).returning()
+        return imagenActualizada
+    }
+
 }

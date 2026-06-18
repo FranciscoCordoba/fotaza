@@ -15,7 +15,10 @@ html
 
         h1= titulo || 'Todas las publicaciones'
 
-        button(onclick="window.location.href = '/publicacion/crear'") Subir nueva publicacion
+        if titulo === 'Feed de Comunidades Seguidas'
+            button(onclick="window.location.href = '/comunidad/crear'") Crear comunidad
+        else
+            button(onclick="window.location.href = '/publicacion/crear'") Subir nueva publicacion
 
         .publicaciones
             each publicacion in publicaciones 

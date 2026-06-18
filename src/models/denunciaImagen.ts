@@ -32,4 +32,20 @@ export class denunciaImagenModel {
         ).returning()
         return denunciaEliminada
     }
+
+    static async getMotivos() {
+        const { motivoDenunciaTable } = await import("../db/schemas/denunciaImagen.js");
+        const motivos = await db.select().from(motivoDenunciaTable);
+        return motivos;
+    }
+
+    static async getByUsuarioAndImagen(nickUsuario: string, idImagen: number) {
+        const denuncia = await db.select().from(denunciaImagenTable).where(
+            and(
+                eq(denunciaImagenTable.nickUsuario, nickUsuario),
+                eq(denunciaImagenTable.idImagen, idImagen)
+            )
+        );
+        return denuncia[0];
+    }
 }
