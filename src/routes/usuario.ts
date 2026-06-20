@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { usuarioController } from '../controllers/usuario.js'
+import { requiresAuth } from '../middlewares/auth.js'
 
 const router = Router()
 
@@ -15,5 +16,10 @@ router.post('/dejar_seguir', usuarioController.dejarSeguirUsuario)
 // router.post('/enviar_mensaje', usuarioController.enviarMensaje)
 
 router.get('/perfil/:nickname', usuarioController.perfilUsuario)
+
+router.get('/colecciones', requiresAuth, usuarioController.verColeccionesView)
+router.get('/colecciones/nueva', requiresAuth, usuarioController.nuevaColeccionView)
+router.post('/colecciones/nueva', requiresAuth, usuarioController.crearColeccion)
+router.get('/colecciones/:nickColeccion', requiresAuth, usuarioController.verColeccionDetalleView)
 
 export default router

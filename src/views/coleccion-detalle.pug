@@ -1,0 +1,24 @@
+html 
+    head 
+        title Colección #{nickColeccion}
+    body 
+        h1 Colección: #{nickColeccion}
+        h3 Usuario: #{nickUsuario}
+
+        if publicaciones && publicaciones.length > 0
+            div(style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px;")
+                each pub in publicaciones
+                    div(style="border: 1px solid #ccc; padding: 15px; border-radius: 8px; text-align: center; width: 250px;")
+                        h4= pub.titulo
+                        p= pub.descripcion
+                        if pub.imagen
+                            img(src=pub.imagen.url, alt=`Imagen de ${pub.titulo}`, style="max-width: 100%; border-radius: 4px; max-height: 200px; object-fit: cover;")
+                        else
+                            p Sin imagenes
+                        br
+                        a(href=`/publicacion/p/${pub.id}/1` style="display: inline-block; margin-top: 10px;") Ver publicacion
+        else 
+            p(style="margin-top: 20px;") No hay publicaciones en esta colección.
+        
+        div(style="margin-top: 30px;")
+            a(href="/usuario/colecciones") Volver a mis colecciones

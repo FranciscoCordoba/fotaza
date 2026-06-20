@@ -20,6 +20,13 @@ html
         h3 #{publicacion.titulo}
         p #{publicacion.descripcion}
 
+        if nickUsuario
+            form(action="/publicacion/" + publicacion.id + "/favorito" method="post" style="margin-top: 10px; margin-bottom: 10px;")
+                if enFavoritos
+                    button(type="submit" style="background-color: #ffd700; border: 1px solid #cca300; padding: 6px 12px; border-radius: 4px; cursor: pointer;") ★ Quitar de Favoritos
+                else
+                    button(type="submit" style="background-color: white; border: 1px solid #ccc; padding: 6px 12px; border-radius: 4px; cursor: pointer;") ☆ Guardar en Favoritos
+
         if etiquetas && etiquetas.length > 0
             p(style="margin-top: 10px; margin-bottom: 15px;")
                 strong Etiquetas: 

@@ -12,6 +12,7 @@ import { usuarioSigueComunidadModel } from "../models/usuarioSigueComunidad.js";
 import { publicacionEnComunidadModel } from "../models/publicacionEnComunidad.js";
 import { denunciaComentarioModel } from "../models/denunciaComentario.js";
 import { denunciaImagenModel } from "../models/denunciaImagen.js";
+import { coleccionModel } from "../models/coleccion.js";
 
 export class publicacionController {
     static async getPublicacionById(req: Request, res: Response) {
@@ -60,7 +61,15 @@ export class publicacionController {
         const statsValoracion = await valoracionModel.getStatsByImage(imagen.id)
         const comentarios = await comentarioModel.getAllByImage(imagen.id)
 
-        return res.render('publicacion', { publicacion, imagen, etiquetas, prev, post, statsValoracion, comentarios, siguiendo, nickUsuario })
+        let enFavoritos = false;
+        if (nickUsuario) {
+            const colecciones = await coleccionModel.getByUsuarioAndPublicacion(nickUsuario, publicacion.id);
+            if (colecciones.length > 0) {
+                enFavoritos = true;
+            }
+        }
+
+        return res.render('publicacion', { publicacion, imagen, etiquetas, prev, post, statsValoracion, comentarios, siguiendo, nickUsuario, enFavoritos })
     }
 
     static async valorarImagen(req: Request, res: Response) {
@@ -275,5 +284,25 @@ export class publicacionController {
         await denunciaImagenModel.create(nickUsuario, idImagenNum, idMotivoNum, descripcion);
 
         return res.redirect(`/publicacion/p/${imagen.idPublicacion}/${imagen.orden}`);
+    }
+
+    static async toggleFavorito(req: Request, res: Response) {
+        const { id } = req.params;
+        const idPublicacion = Number(id);
+        if (isNaN(idPublicacion)) throw new Error("Datos invalidos");
+
+        const nickUsuario = req.session?.user?.nickname;
+        if (!nickUsuario) throw new Error("Usuario no logueado");
+
+        const colecciones = await coleccionModel.getByUsuarioAndPublicacion(nickUsuario, idPublicacion);
+        
+        if (colecciones.length > 0) {
+            await coleccionModel.deleteAllFromUsuarioAndPublicacion(nickUsuario, idPublicacion);
+        } else {
+            await coleccionModel.create(nickUsuario, 'Favoritos', idPublicacion);
+        }
+
+        const backURL = req.header('Referer') || '/feed';
+        return res.redirect(backURL);
     }
 }

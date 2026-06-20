@@ -1,0 +1,31 @@
+html 
+    head 
+        title Nueva Colección
+    body 
+        h1 Crear Nueva Colección para #{nickUsuario}
+
+        form(action="/usuario/colecciones/nueva" method="POST")
+            div(style="margin-bottom: 15px;")
+                label(for="nombreColeccion" style="display: block; font-weight: bold;") Nombre de la Colección:
+                input(type="text" id="nombreColeccion" name="nombreColeccion" required style="padding: 8px; width: 300px; margin-top: 5px;")
+            
+            h3 Publicaciones en 'Favoritos'
+            p Selecciona las publicaciones que deseas agregar a la nueva colección:
+            
+            if publicacionesFav && publicacionesFav.length > 0
+                div(style="display: flex; flex-wrap: wrap; gap: 15px;")
+                    each pub in publicacionesFav
+                        div(style="border: 1px solid #ddd; padding: 10px; border-radius: 8px; width: 200px;")
+                            label(style="display: block; cursor: pointer;")
+                                input(type="checkbox" name="publicaciones" value=pub.id style="margin-right: 8px;")
+                                strong= pub.titulo
+                                if pub.imagen
+                                    img(src=pub.imagen.url, alt=pub.titulo, style="max-width: 100%; display: block; margin-top: 5px; border-radius: 4px;")
+            else
+                p(style="color: red;") No tienes publicaciones en Favoritos. Agrega alguna primero.
+            
+            div(style="margin-top: 20px;")
+                button(type="submit" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;") Guardar Colección
+        
+        div(style="margin-top: 30px;")
+            a(href="/usuario/colecciones") Cancelar

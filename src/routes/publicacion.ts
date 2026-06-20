@@ -16,5 +16,6 @@ router.post('/imagen/:idImagen/toggle-comentarios', requiresAuth, publicacionCon
 router.post('/comentario/:idComentario/denunciar', requiresAuth, publicacionController.denunciarComentario)
 router.get('/imagen/:idImagen/denunciar', requiresAuth, publicacionController.denunciarImagenView)
 router.post('/imagen/:idImagen/denunciar', requiresAuth, publicacionController.denunciarImagenPost)
+router.post('/:id/favorito', requiresAuth, publicacionController.toggleFavorito)
 
 export default router

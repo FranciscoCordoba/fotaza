@@ -7,6 +7,7 @@ import { publicacionModel } from "../models/publicacion.js";
 import { imagenModel } from "../models/imagen.js";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
+import { coleccionModel } from "../models/coleccion.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secretKey'
 
@@ -226,4 +227,90 @@ export class usuarioController {
         return res.status(500).json({ solicitud: 'fallida' })
     }
 
+    static async verColeccionesView(req: Request, res: Response) {
+        const nickUsuario = req.session?.user?.nickname;
+        if (!nickUsuario) throw new Error("Usuario no logueado");
+
+        const coleccionesBasicas = await coleccionModel.getColeccionesConUltimaPublicacion(nickUsuario);
+
+        const colecciones = await Promise.all(coleccionesBasicas.map(async (col) => {
+            const imagen = await imagenModel.getByIdPublicacionAndOrden(col.idPublicacion, 1);
+            return {
+                ...col,
+                imagen
+            }
+        }));
+
+        return res.render('colecciones', { colecciones, nickUsuario });
+    }
+
+    static async nuevaColeccionView(req: Request, res: Response) {
+        const nickUsuario = req.session?.user?.nickname;
+        if (!nickUsuario) throw new Error("Usuario no logueado");
+
+        const favs = await coleccionModel.getPublicacionesEnColeccion(nickUsuario, 'Favoritos');
+
+        const publicacionesFav = await Promise.all(favs.map(async (fav) => {
+            const publicacion = await publicacionModel.getById(fav.idPublicacion);
+            const imagen = await imagenModel.getByIdPublicacionAndOrden(fav.idPublicacion, 1);
+            return {
+                ...publicacion,
+                imagen
+            }
+        }));
+
+        return res.render('nueva-coleccion', { publicacionesFav, nickUsuario });
+    }
+
+    static async crearColeccion(req: Request, res: Response) {
+        const nickUsuario = req.session?.user?.nickname;
+        if (!nickUsuario) throw new Error("Usuario no logueado");
+
+        const { nombreColeccion, publicaciones } = req.body;
+        if (!nombreColeccion || typeof nombreColeccion !== 'string' || nombreColeccion.trim() === '') {
+            throw new Error("Nombre de coleccion invalido");
+        }
+
+        const nombre = nombreColeccion.trim();
+
+        let ids: number[] = [];
+        if (publicaciones) {
+            if (Array.isArray(publicaciones)) {
+                ids = publicaciones.map(p => Number(p));
+            } else {
+                ids = [Number(publicaciones)];
+            }
+        }
+
+        const promesas = ids.map(idPub => {
+            if (!isNaN(idPub)) {
+                return coleccionModel.create(nickUsuario, nombre, idPub);
+            }
+        });
+
+        await Promise.all(promesas);
+
+        return res.redirect('/usuario/colecciones');
+    }
+
+    static async verColeccionDetalleView(req: Request, res: Response) {
+        const nickUsuario = req.session?.user?.nickname;
+        if (!nickUsuario) throw new Error("Usuario no logueado");
+
+        const { nickColeccion } = req.params;
+        if (!nickColeccion || typeof nickColeccion !== 'string' || nickColeccion.trim() === '') throw new Error("Coleccion no especificada");
+
+        const pubsEnColeccion = await coleccionModel.getPublicacionesEnColeccion(nickUsuario, nickColeccion);
+
+        const publicaciones = await Promise.all(pubsEnColeccion.map(async (col) => {
+            const publicacion = await publicacionModel.getById(col.idPublicacion);
+            const imagen = await imagenModel.getByIdPublicacionAndOrden(col.idPublicacion, 1);
+            return {
+                ...publicacion,
+                imagen
+            }
+        }));
+
+        return res.render('coleccion-detalle', { publicaciones, nickColeccion, nickUsuario });
+    }
 }

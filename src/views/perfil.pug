@@ -14,6 +14,10 @@ html
                     input(type="hidden", name="nickSeguido", value=perfil.nickname)
                     button(type="submit") Seguir
 
+        if esPropio 
+            div(style="margin-top: 15px; margin-bottom: 15px;")
+                a(href="/usuario/colecciones" style="padding: 8px 16px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;") Ver mis colecciones
+
         h2 Publicaciones 
         if publicaciones && publicaciones.length > 0
             ul
@@ -24,6 +28,6 @@ html
                         if pub.imagen
                             img(src=pub.imagen.url, alt=pub.titulo, width="200")
                             br
-                        a(href=`/publicacion/${pub.id}/1`) Ver publicacion
+                        a(href=`/publicacion/p/${pub.id}/1`) Ver publicacion
         else 
             p Este usuario no tiene publicaciones.
