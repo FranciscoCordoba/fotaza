@@ -22,4 +22,7 @@ router.get('/colecciones/nueva', requiresAuth, usuarioController.nuevaColeccionV
 router.post('/colecciones/nueva', requiresAuth, usuarioController.crearColeccion)
 router.get('/colecciones/:nickColeccion', requiresAuth, usuarioController.verColeccionDetalleView)
 
+router.get('/notificaciones', requiresAuth, usuarioController.verNotificacionesView)
+router.post('/notificaciones/:id/vista', requiresAuth, usuarioController.marcarNotificacionVista)
+
 export default router

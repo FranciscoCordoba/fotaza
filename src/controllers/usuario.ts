@@ -8,6 +8,7 @@ import { imagenModel } from "../models/imagen.js";
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { coleccionModel } from "../models/coleccion.js";
+import { notificacionModel } from "../models/notificacion.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secretKey'
 
@@ -189,6 +190,8 @@ export class usuarioController {
             nickSeguido
         })
 
+        await notificacionModel.create(nickSeguidor, nickSeguido, 'seguir');
+
         const backURL = req.header('Referer') || '/feed'
         return res.redirect(backURL)
     }
@@ -312,5 +315,28 @@ export class usuarioController {
         }));
 
         return res.render('coleccion-detalle', { publicaciones, nickColeccion, nickUsuario });
+    }
+
+    static async verNotificacionesView(req: Request, res: Response) {
+        const nickUsuario = req.session?.user?.nickname;
+        if (!nickUsuario) throw new Error("Usuario no logueado");
+
+        const notificaciones = await notificacionModel.getByNickname(nickUsuario);
+
+        return res.render('notificaciones', { notificaciones, nickUsuario });
+    }
+
+    static async marcarNotificacionVista(req: Request, res: Response) {
+        const nickUsuario = req.session?.user?.nickname;
+        if (!nickUsuario) throw new Error("Usuario no logueado");
+
+        const { id } = req.params;
+        const idNum = Number(id);
+        if (isNaN(idNum)) throw new Error("ID invalido");
+
+        await notificacionModel.marcarComoVista(idNum, nickUsuario);
+
+        const backURL = req.header('Referer') || '/usuario/notificaciones';
+        return res.redirect(backURL);
     }
 }

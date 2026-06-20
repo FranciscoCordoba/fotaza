@@ -1,0 +1,34 @@
+html 
+    head 
+        title Mis Notificaciones
+    body 
+        h1 Notificaciones de #{nickUsuario}
+
+        div(style="margin-bottom: 20px;")
+            a(href=`/usuario/perfil/${nickUsuario}` style="text-decoration: none; color: #007bff;") ⬅️ Volver a mi perfil
+
+        if notificaciones && notificaciones.length > 0
+            ul(style="list-style-type: none; padding: 0;")
+                each noti in notificaciones
+                    li(style=`border: 1px solid #ccc; padding: 15px; border-radius: 8px; margin-bottom: 10px; ${noti.vista ? 'background-color: #f9f9f9; color: #666;' : 'background-color: #e6f7ff; border-left: 5px solid #007bff;'}`)
+                        div(style="display: flex; justify-content: space-between; align-items: center;")
+                            div
+                                p(style="margin: 0 0 5px 0; font-size: 0.9em; color: #999;")= new Date(noti.createdAt).toLocaleDateString()
+                                p(style="margin: 0;")
+                                    strong= noti.nickGeneracion 
+                                    if noti.fuenteTipo === 'comentario'
+                                        |  ha comentado en tu publicación.
+                                    else if noti.fuenteTipo === 'valoracion'
+                                        |  ha valorado tu publicación.
+                                    else if noti.fuenteTipo === 'seguir'
+                                        |  ha comenzado a seguirte.
+                                    else
+                                        |  interactuó contigo (#{noti.fuenteTipo}).
+                            div
+                                if !noti.vista
+                                    form(action=`/usuario/notificaciones/${noti.id}/vista` method="POST" style="margin: 0;")
+                                        button(type="submit" style="padding: 6px 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;") Marcar como leída
+                                else
+                                    span(style="color: #28a745; font-size: 0.9em;") ✓ Leída
+        else 
+            p No tienes ninguna notificación.

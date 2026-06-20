@@ -13,6 +13,7 @@ import { publicacionEnComunidadModel } from "../models/publicacionEnComunidad.js
 import { denunciaComentarioModel } from "../models/denunciaComentario.js";
 import { denunciaImagenModel } from "../models/denunciaImagen.js";
 import { coleccionModel } from "../models/coleccion.js";
+import { notificacionModel } from "../models/notificacion.js";
 
 export class publicacionController {
     static async getPublicacionById(req: Request, res: Response) {
@@ -87,6 +88,14 @@ export class publicacionController {
 
         await valoracionModel.create(nickUsuario!, idImagenNum, puntajeNum)
 
+        const imagen = await imagenModel.getById(idImagenNum);
+        if (imagen) {
+            const publicacion = await publicacionModel.getById(imagen.idPublicacion);
+            if (publicacion && publicacion.nickUsuario !== nickUsuario) {
+                await notificacionModel.create(nickUsuario!, publicacion.nickUsuario, 'valoracion');
+            }
+        }
+
         const backURL = req.header('Referer') || '/feed'
         return res.redirect(backURL)
     }
@@ -103,6 +112,14 @@ export class publicacionController {
         const nickUsuario = req.session?.user?.nickname
 
         await comentarioModel.create(nickUsuario!, idImagenNum, texto.trim())
+
+        const imagen = await imagenModel.getById(idImagenNum);
+        if (imagen) {
+            const publicacion = await publicacionModel.getById(imagen.idPublicacion);
+            if (publicacion && publicacion.nickUsuario !== nickUsuario) {
+                await notificacionModel.create(nickUsuario!, publicacion.nickUsuario, 'comentario');
+            }
+        }
 
         const backURL = req.header('Referer') || '/feed'
         return res.redirect(backURL)
