@@ -4,18 +4,16 @@ import { requiresAuth } from '../middlewares/auth.js'
 
 const router = Router()
 
-router.get('/allUsers', usuarioController.allUsers)
-
 // router.post('/cerrar_sesion', usuarioController.cerrarSesion)
 // router.delete('/eliminar', usuarioController.eliminarUsuario)
 
-router.post('/seguir', usuarioController.seguirUsuario)
-router.post('/dejar_seguir', usuarioController.dejarSeguirUsuario)
+router.post('/seguir', requiresAuth, usuarioController.seguirUsuario)
+router.post('/dejar_seguir', requiresAuth, usuarioController.dejarSeguirUsuario)
 // router.get('/listar_seguidores', usuarioController.listarSeguidores)
 
 // router.post('/enviar_mensaje', usuarioController.enviarMensaje)
 
-router.get('/perfil/:nickname', usuarioController.perfilUsuario)
+router.get('/perfil/:nickname', requiresAuth, usuarioController.perfilUsuario)
 
 router.get('/colecciones', requiresAuth, usuarioController.verColeccionesView)
 router.get('/colecciones/nueva', requiresAuth, usuarioController.nuevaColeccionView)
