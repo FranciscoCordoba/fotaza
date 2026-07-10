@@ -4,6 +4,7 @@ import authRouter from './routes/auth.js'
 import publicacionRouter from './routes/publicacion.js'
 import feedRouter from './routes/feed.js'
 import comunidadRouter from './routes/comunidad.js'
+import moderacionRouter from './routes/moderacion.js'
 
 const PORT = process.env.PORT || 3000
 
@@ -25,6 +26,7 @@ app.use('/usuario', usuarioRouter)
 app.use('/publicacion', publicacionRouter)
 app.use('/feed', feedRouter)
 app.use('/comunidad', comunidadRouter)
+app.use('/moderacion', moderacionRouter)
 
 if (!process.env.NODE_ENV) //NODE_ENV ni como produccion ni como tests
     app.listen(PORT, () => {

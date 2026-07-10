@@ -1,0 +1,39 @@
+html
+    head
+        title Moderación de Comentarios
+    body
+        div(style="margin-bottom: 10px;")
+            a(href="/feed", style="margin-right: 10px;") Volver al Feed
+
+        h1 Moderación de Comentarios en tus Publicaciones
+
+        if denuncias && denuncias.length > 0
+            .denuncias(style="display: flex; flex-direction: column; gap: 15px;")
+                each item in denuncias
+                    div(style="border: 1px solid #ccc; padding: 10px; border-radius: 5px;")
+                        h3 Publicación: #{item.publicacion.titulo}
+                        if item.imagen.url
+                            img(src=item.imagen.url, style="max-width: 150px; display: block; margin-bottom: 10px;")
+                        
+                        p(style="margin: 5px 0;") 
+                            strong Comentario de #{item.comentario.nickUsuario}: 
+                            | "#{item.comentario.texto}"
+                        
+                        p(style="margin: 5px 0; color: #d9534f;") 
+                            strong Denunciado por: 
+                            | #{item.denuncia.nickUsuario}
+                            | el #{new Date(item.denuncia.createdAt).toLocaleDateString()}
+                        
+                        div(style="display: flex; gap: 10px; margin-top: 10px;")
+                            //- Form para desestimar
+                            form(action="/moderacion/desestimar", method="POST")
+                                input(type="hidden", name="nickUsuario", value=item.denuncia.nickUsuario)
+                                input(type="hidden", name="idComentario", value=item.comentario.id)
+                                button(type="submit", style="padding: 5px 10px; background-color: #f0ad4e; color: white; border: none; cursor: pointer; border-radius: 3px;") Desestimar Denuncia
+                            
+                            //- Form para borrar comentario
+                            form(action="/moderacion/eliminar", method="POST")
+                                input(type="hidden", name="idComentario", value=item.comentario.id)
+                                button(type="submit", style="padding: 5px 10px; background-color: #d9534f; color: white; border: none; cursor: pointer; border-radius: 3px;") Eliminar Comentario
+        else
+            p No tienes comentarios denunciados en tus publicaciones en este momento.
