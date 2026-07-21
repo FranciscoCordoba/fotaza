@@ -30,4 +30,16 @@ export class usuarioModel {
         return usuarioEliminado
     }
 
+    static async sumarStrike(nickname: string) {
+        const usuario = await this.getByNickname(nickname);
+        if (usuario) {
+            const result = await db.update(usuarioTable)
+                .set({ strikes: usuario.strikes + 1 })
+                .where(eq(usuarioTable.nickname, nickname))
+                .returning();
+            return result[0];
+        }
+        return null;
+    }
+
 }

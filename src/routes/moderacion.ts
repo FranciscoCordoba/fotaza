@@ -7,5 +7,6 @@ const router = Router();
 router.get('/', requiresAuth, moderacionController.getDenuncias);
 router.post('/desestimar', requiresAuth, moderacionController.desestimar);
 router.post('/eliminar', requiresAuth, moderacionController.eliminarComentario);
+router.post('/estado-imagen', requiresAuth, moderacionController.actualizarEstadoDenunciaImagen);
 
 export default router;

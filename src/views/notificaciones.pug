@@ -22,6 +22,9 @@ html
                                         |  ha valorado tu publicación.
                                     else if noti.fuenteTipo === 'seguir'
                                         |  ha comenzado a seguirte.
+                                    else if noti.fuenteTipo.startsWith('strike:')
+                                        |  ha denunciado tu publicación (Motivo: #{noti.fuenteTipo.split(':')[1].trim()}). 
+                                        strong (Se te ha sumado un strike)
                                     else
                                         |  interactuó contigo (#{noti.fuenteTipo}).
                             div

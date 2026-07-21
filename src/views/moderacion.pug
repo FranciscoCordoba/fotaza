@@ -37,3 +37,44 @@ html
                                 button(type="submit", style="padding: 5px 10px; background-color: #d9534f; color: white; border: none; cursor: pointer; border-radius: 3px;") Eliminar Comentario
         else
             p No tienes comentarios denunciados en tus publicaciones en este momento.
+
+        if rol === 'moderador' || rol === 'admin'
+            h1(style="margin-top: 40px;") Moderación Global de Imágenes (Administración)
+
+            if denunciasImagen && denunciasImagen.length > 0
+                .denuncias(style="display: flex; flex-direction: column; gap: 15px;")
+                    each item in denunciasImagen
+                        div(style="border: 1px solid #ccc; padding: 10px; border-radius: 5px;")
+                            h3 Publicación: #{item.publicacion.titulo}
+                            if item.imagen.url
+                                img(src=item.imagen.url, style="max-width: 150px; display: block; margin-bottom: 10px;")
+                            
+                            p(style="margin: 5px 0; color: #d9534f;") 
+                                strong Denunciada por: 
+                                | #{item.denuncia.nickUsuario}
+                                | el #{new Date(item.denuncia.createdAt).toLocaleDateString()}
+                            p(style="margin: 5px 0;")
+                                strong Motivo: 
+                                | #{item.motivo.motivo}
+                            if item.denuncia.descripcion
+                                p(style="margin: 5px 0;")
+                                    strong Descripción: 
+                                    | #{item.denuncia.descripcion}
+                            p(style="margin: 5px 0;")
+                                strong Estado actual: 
+                                | #{item.denuncia.estado}
+
+                            div(style="display: flex; gap: 10px; margin-top: 10px; align-items: center;")
+                                if item.denuncia.estado === 'pendiente'
+                                    form(action="/moderacion/estado-imagen", method="POST", style="display: flex; gap: 10px;")
+                                        input(type="hidden", name="nickUsuario", value=item.denuncia.nickUsuario)
+                                        input(type="hidden", name="idImagen", value=item.imagen.id)
+                                        select(name="estado", style="padding: 5px;")
+                                            option(value="pendiente", selected=item.denuncia.estado === 'pendiente') Pendiente
+                                            option(value="aceptada", selected=item.denuncia.estado === 'aceptada') Aceptada
+                                            option(value="rechazada", selected=item.denuncia.estado === 'rechazada') Rechazada
+                                        button(type="submit", style="padding: 5px 10px; background-color: #0275d8; color: white; border: none; cursor: pointer; border-radius: 3px;") Actualizar Estado
+                                else
+                                    p(style="margin: 0; color: #5bc0de;") Estado ya fue actualizado, no se puede modificar.
+            else
+                p No hay imágenes denunciadas en el sistema.

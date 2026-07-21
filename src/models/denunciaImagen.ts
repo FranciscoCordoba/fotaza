@@ -48,4 +48,32 @@ export class denunciaImagenModel {
         );
         return denuncia[0];
     }
+
+    static async getAllWithDetails() {
+        const { motivoDenunciaTable } = await import("../db/schemas/denunciaImagen.js");
+        const { imagenTable } = await import("../db/schemas/imagen.js");
+        const { publicacionTable } = await import("../db/schemas/publicacion.js");
+
+        return await db.select({
+            denuncia: denunciaImagenTable,
+            motivo: motivoDenunciaTable,
+            imagen: imagenTable,
+            publicacion: publicacionTable
+        })
+        .from(denunciaImagenTable)
+        .innerJoin(motivoDenunciaTable, eq(denunciaImagenTable.idMotivo, motivoDenunciaTable.id))
+        .innerJoin(imagenTable, eq(denunciaImagenTable.idImagen, imagenTable.id))
+        .innerJoin(publicacionTable, eq(imagenTable.idPublicacion, publicacionTable.id));
+    }
+
+    static async updateEstado(nickUsuario: string, idImagen: number, estado: 'pendiente' | 'aceptada' | 'rechazada') {
+        return await db.update(denunciaImagenTable)
+            .set({ estado })
+            .where(
+                and(
+                    eq(denunciaImagenTable.nickUsuario, nickUsuario),
+                    eq(denunciaImagenTable.idImagen, idImagen)
+                )
+            ).returning();
+    }
 }

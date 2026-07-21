@@ -44,4 +44,38 @@ export class publicacionModel {
         return publicacionEliminada
     }
 
+    static async deleteCompleta(idPublicacion: number) {
+        const { valoracionTable } = await import("../db/schemas/valoracion.js");
+        const { etiquetaTable } = await import("../db/schemas/etiqueta.js");
+        const { publicacionEnComunidadTable } = await import("../db/schemas/publicacionEnComunidad.js");
+        const { coleccionTable } = await import("../db/schemas/coleccion.js");
+        const { imagenTable } = await import("../db/schemas/imagen.js");
+        const { denunciaImagenTable } = await import("../db/schemas/denunciaImagen.js");
+        const { comentarioTable } = await import("../db/schemas/comentario.js");
+        const { denunciaComentarioTable } = await import("../db/schemas/denunciaComentario.js");
+
+        await db.delete(etiquetaTable).where(eq(etiquetaTable.idPublicacion, idPublicacion));
+        await db.delete(publicacionEnComunidadTable).where(eq(publicacionEnComunidadTable.idPublicacion, idPublicacion));
+        await db.delete(coleccionTable).where(eq(coleccionTable.idPublicacion, idPublicacion));
+
+        const imagenes = await db.select({ id: imagenTable.id }).from(imagenTable).where(eq(imagenTable.idPublicacion, idPublicacion));
+        const imgIds = imagenes.map(img => img.id);
+
+        if (imgIds.length > 0) {
+            const comentarios = await db.select({ id: comentarioTable.id }).from(comentarioTable).where(inArray(comentarioTable.idImagen, imgIds));
+            const comIds = comentarios.map(c => c.id);
+
+            if (comIds.length > 0) {
+                await db.delete(denunciaComentarioTable).where(inArray(denunciaComentarioTable.idComentario, comIds));
+            }
+
+            await db.delete(denunciaImagenTable).where(inArray(denunciaImagenTable.idImagen, imgIds));
+            await db.delete(valoracionTable).where(inArray(valoracionTable.idImagen, imgIds));
+            await db.delete(comentarioTable).where(inArray(comentarioTable.idImagen, imgIds));
+            await db.delete(imagenTable).where(inArray(imagenTable.id, imgIds));
+        }
+
+        await db.delete(publicacionTable).where(eq(publicacionTable.id, idPublicacion));
+    }
+
 }
