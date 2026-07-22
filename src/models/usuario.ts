@@ -30,6 +30,16 @@ export class usuarioModel {
         return usuarioEliminado
     }
 
+    static async desactivar(nick: string) {
+        const [usuarioEliminado] = await db.update(usuarioTable).set({ activo: false }).where(eq(usuarioTable.nickname, nick)).returning()
+
+        if (usuarioEliminado) {
+            const { password, ...usuarioPublico } = usuarioEliminado
+            return usuarioPublico
+        }
+        return undefined
+    }
+
     static async sumarStrike(nickname: string) {
         const usuario = await this.getByNickname(nickname);
         if (usuario) {
@@ -37,7 +47,7 @@ export class usuarioModel {
                 .set({ strikes: usuario.strikes + 1 })
                 .where(eq(usuarioTable.nickname, nickname))
                 .returning();
-            return result[0];
+            return result[0]?.strikes;
         }
         return null;
     }

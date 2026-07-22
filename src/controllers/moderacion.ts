@@ -20,7 +20,7 @@ export class moderacionController {
             const rol = usuario?.rol || 'usuario';
 
             const denuncias = await denunciaComentarioModel.getDenunciasPorAutorPublicacion(nickname);
-            
+
             let denunciasImagen: any[] = [];
             if (rol === 'moderador' || rol === 'admin') {
                 denunciasImagen = await denunciaImagenModel.getAllWithDetails();
@@ -85,9 +85,9 @@ export class moderacionController {
             }
 
             const { nickUsuario, idImagen, estado } = req.body;
-            
+
             if (!['pendiente', 'aceptada', 'rechazada'].includes(estado)) {
-                 return res.status(400).send('Estado inválido');
+                return res.status(400).send('Estado inválido');
             }
 
             const denunciaExistente = await denunciaImagenModel.getByUsuarioAndImagen(String(nickUsuario), Number(idImagen));
@@ -99,7 +99,7 @@ export class moderacionController {
                 return res.status(400).send('La denuncia ya fue procesada y su estado no puede ser modificado');
             }
 
-            await denunciaImagenModel.updateEstado(String(nickUsuario), Number(idImagen), estado as 'pendiente'|'aceptada'|'rechazada');
+            await denunciaImagenModel.updateEstado(String(nickUsuario), Number(idImagen), estado as 'pendiente' | 'aceptada' | 'rechazada');
 
             if (estado === 'aceptada') {
                 const imagen = await imagenModel.getById(Number(idImagen));
@@ -107,24 +107,28 @@ export class moderacionController {
                     const publicacion = await publicacionModel.getById(imagen.idPublicacion);
                     if (publicacion) {
                         const autorNick = publicacion.nickUsuario;
-                        
+
                         // Eliminar la publicación completa
                         await publicacionModel.deleteCompleta(publicacion.id);
 
                         // Sumar strike
-                        await usuarioModel.sumarStrike(autorNick);
+                        const strikes = await usuarioModel.sumarStrike(autorNick);
 
                         // Enviar notificación al autor
                         // Obtenemos el motivo
                         const motivos = await denunciaImagenModel.getMotivos();
                         const motivoObj = motivos.find(m => m.id === denunciaExistente.idMotivo);
                         const motivoTexto = motivoObj ? motivoObj.motivo : 'Inapropiado';
-                        
+
                         await notificacionModel.create(
                             String(nickUsuario), // usuario que denuncia
                             autorNick, // usuario que recibe (autor de la publicación)
                             `strike: ${motivoTexto}`
                         );
+
+                        if (strikes && strikes === 3) {
+                            await usuarioModel.desactivar(autorNick);
+                        }
                     }
                 }
             }

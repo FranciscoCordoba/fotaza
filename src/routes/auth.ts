@@ -1,12 +1,13 @@
 import { Router } from "express";
-import { usuarioController } from "../controllers/usuario.js";
+import { authController } from "../controllers/auth.js";
 
 const router = Router()
 
-router.get('/login', usuarioController.loginUsuarioView)
-router.post('/login', usuarioController.loginUsuario)
-router.get('/registro', usuarioController.registroUsuarioView)
-router.post('/registro', usuarioController.registrarUsuario)
-//router.post('/refresh', usuarioController.refreshToken)
+router.get('/login', authController.loginUsuarioView)
+router.post('/login', authController.loginUsuario)
+router.get('/registro', authController.registroUsuarioView)
+router.post('/registro', authController.registrarUsuario)
+//router.post('/refresh', authController.refreshToken)
+//router.post('/cerrar_sesion', authController.cerrarSesion)
 
 export default router
