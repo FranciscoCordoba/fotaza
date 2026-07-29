@@ -18,5 +18,6 @@ router.get('/imagen/:idImagen/denunciar', requiresAuth, publicacionController.de
 router.post('/imagen/:idImagen/denunciar', requiresAuth, publicacionController.denunciarImagenPost)
 router.post('/:id/favorito', requiresAuth, publicacionController.toggleFavorito)
 router.post('/imagen/:idImagen/copyright', requiresAuth, publicacionController.setCopyrightImagen)
+router.post('/imagen/:idImagen/interesar', requiresAuth, publicacionController.marcarInteres)
 
 export default router

@@ -55,6 +55,12 @@ html
                 if publicacion.nickUsuario != nickUsuario
                     div(style="margin-top: 5px;")
                         button(onclick="window.location.href = '/publicacion/imagen/" + imagen.id + "/denunciar'" style="color: red; border: 1px solid red; background: white; padding: 4px 8px; border-radius: 4px; cursor: pointer;") Denunciar Imagen
+                        if imagen.copyright
+                            if yaInteresado
+                                span(style="margin-left: 10px; color: green; font-weight: bold;") ✓ Ya mostraste interés
+                            else
+                                form(action="/publicacion/imagen/" + imagen.id + "/interesar" method="POST" style="display: inline-block; margin-left: 10px;")
+                                    button(type="submit" style="color: #fff; border: 1px solid #0056b3; background: #007bff; padding: 4px 8px; border-radius: 4px; cursor: pointer;") Me interesa adquirirla
                     
                 div(style="margin-top: 15px; padding: 10px; border: 1px solid black; border-radius: 4px; display: inline-block;")
                     if statsValoracion && statsValoracion.cantidad > 0

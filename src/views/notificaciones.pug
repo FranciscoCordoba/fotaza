@@ -25,6 +25,8 @@ html
                                     else if noti.fuenteTipo.startsWith('strike:')
                                         |  ha denunciado tu publicación (Motivo: #{noti.fuenteTipo.split(':')[1].trim()}). 
                                         strong (Se te ha sumado un strike)
+                                    else if noti.fuenteTipo === 'interes'
+                                        |  ha mostrado interes en una de tus imágenes con copyright.
                                     else
                                         |  interactuó contigo (#{noti.fuenteTipo}).
                             div

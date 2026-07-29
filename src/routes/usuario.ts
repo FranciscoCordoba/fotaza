@@ -11,8 +11,6 @@ router.post('/seguir', requiresAuth, usuarioController.seguirUsuario)
 router.post('/dejar_seguir', requiresAuth, usuarioController.dejarSeguirUsuario)
 // router.get('/listar_seguidores', usuarioController.listarSeguidores)
 
-// router.post('/enviar_mensaje', usuarioController.enviarMensaje)
-
 router.get('/perfil/:nickname', requiresAuth, usuarioController.perfilUsuario)
 
 router.get('/colecciones', requiresAuth, usuarioController.verColeccionesView)

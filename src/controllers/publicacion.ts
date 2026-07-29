@@ -14,6 +14,9 @@ import { denunciaComentarioModel } from "../models/denunciaComentario.js";
 import { denunciaImagenModel } from "../models/denunciaImagen.js";
 import { coleccionModel } from "../models/coleccion.js";
 import { notificacionModel } from "../models/notificacion.js";
+import { interesModel } from "../models/interes.js";
+import { mensajeModel } from "../models/mensaje.js";
+import { conversacionModel } from "../models/conversacion.js";
 
 export class publicacionController {
     static async getPublicacionById(req: Request, res: Response) {
@@ -70,7 +73,15 @@ export class publicacionController {
             }
         }
 
-        return res.render('publicacion', { publicacion, imagen, etiquetas, prev, post, statsValoracion, comentarios, siguiendo, nickUsuario, enFavoritos })
+        let yaInteresado = false;
+        if (nickUsuario && nickUsuario != publicacion.nickUsuario && imagen.copyright) {
+            const interes = await interesModel.getByNicknames(nickUsuario, imagen.id);
+            if (interes) {
+                yaInteresado = true;
+            }
+        }
+
+        return res.render('publicacion', { publicacion, imagen, etiquetas, prev, post, statsValoracion, comentarios, siguiendo, nickUsuario, enFavoritos, yaInteresado })
     }
 
     static async valorarImagen(req: Request, res: Response) {
@@ -312,7 +323,7 @@ export class publicacionController {
         if (!nickUsuario) throw new Error("Usuario no logueado");
 
         const colecciones = await coleccionModel.getByUsuarioAndPublicacion(nickUsuario, idPublicacion);
-        
+
         if (colecciones.length > 0) {
             await coleccionModel.deleteAllFromUsuarioAndPublicacion(nickUsuario, idPublicacion);
         } else {
@@ -357,5 +368,50 @@ export class publicacionController {
         await imagenModel.updateUrlAndCopyright(idImagenNum, result.secure_url);
 
         return res.redirect(`/publicacion/p/${imagen.idPublicacion}/${imagen.orden}`);
+    }
+
+    static async marcarInteres(req: Request, res: Response) {
+        const { idImagen } = req.params;
+        const idImagenNum = Number(idImagen);
+
+        if (isNaN(idImagenNum)) throw new Error("Datos invalidos");
+
+        const nickUsuario = req.session?.user?.nickname;
+        if (!nickUsuario) throw new Error("Usuario no logueado");
+
+        const imagen = await imagenModel.getById(idImagenNum);
+        if (!imagen) throw new Error("Imagen no encontrada");
+        if (!imagen.copyright) throw new Error("La imagen no tiene copyright");
+
+        const publicacion = await publicacionModel.getById(imagen.idPublicacion);
+        if (!publicacion) throw new Error("Publicacion no encontrada");
+
+        if (publicacion.nickUsuario === nickUsuario) {
+            throw new Error("No puedes mostrar interes en tu propia imagen");
+        }
+
+        const interes = await interesModel.getByNicknames(nickUsuario, idImagenNum);
+        if (interes) {
+            throw new Error("Ya mostraste interes");
+        }
+
+        await interesModel.create(nickUsuario, idImagenNum);
+
+        await notificacionModel.create(nickUsuario, publicacion.nickUsuario, 'interes');
+
+        let conversacion = await conversacionModel.getByUsers(nickUsuario, publicacion.nickUsuario);
+        if (!conversacion) {
+            conversacion = await conversacionModel.create(nickUsuario, publicacion.nickUsuario);
+        }
+
+        if (!conversacion) throw new Error("Error al crear conversacion");
+        await mensajeModel.create(
+            conversacion.id,
+            nickUsuario,
+            `¡Hola! Me interesa adquirir tu imagen con copyright (ID: ${imagen.id}) de la publicación '${publicacion.titulo}'.`
+        );
+
+        const backURL = req.header('Referer') || `/publicacion/p/${publicacion.id}/${imagen.orden}`;
+        return res.redirect(backURL);
     }
 }

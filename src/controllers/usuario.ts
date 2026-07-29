@@ -48,12 +48,20 @@ export class usuarioController {
             }
         }
 
+        const seguidosArray = await usuarioSigueAModel.getAllSeguidos(nickname);
+        const seguidoresArray = await usuarioSigueAModel.getAllSeguidores(nickname);
+        
+        const cantidadSeguidos = seguidosArray.length;
+        const cantidadSeguidores = seguidoresArray.length;
+
         return res.render('perfil', {
             perfil,
             publicaciones: publicacionesConDatos,
             esPropio,
             siguiendo,
-            nickUsuarioLogueado
+            nickUsuarioLogueado,
+            cantidadSeguidos,
+            cantidadSeguidores
         });
     }
     static async eliminarUsuario(req: Request, res: Response) {
@@ -122,17 +130,6 @@ export class usuarioController {
         const { id } = req.body
         const info: usuarioSigueA[] = await usuarioSigueAModel.getAllSeguidores(id)
         return info
-    }
-
-    //Tabla mensaje
-    static async enviarMensaje(req: Request, res: Response) {
-        const mensaje: mensajeInsert = req.body
-        const confirmado = await mensajeModel.create(mensaje)
-
-        if (confirmado)
-            return res.status(200).json({ solicitud: 'exitosa' })
-
-        return res.status(500).json({ solicitud: 'fallida' })
     }
 
     static async verColeccionesView(req: Request, res: Response) {
