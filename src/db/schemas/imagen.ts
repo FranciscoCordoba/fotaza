@@ -1,4 +1,4 @@
-import { boolean, integer, pgTable, real, serial, varchar } from "drizzle-orm/pg-core";
+import { boolean, integer, pgTable, serial, varchar } from "drizzle-orm/pg-core";
 import { publicacionTable } from "./publicacion.js";
 
 export const imagenTable = pgTable('imagen', {
@@ -7,5 +7,5 @@ export const imagenTable = pgTable('imagen', {
     url: varchar({ length: 255 }).notNull().unique(),
     orden: integer().notNull(),
     comentariosActivos: boolean('comentarios_activos').default(true).notNull(),
-    textoMarcaDeAgua: varchar('texto_marca_de_agua', { length: 100 })
+    copyright: boolean('copyright').default(false).notNull()
 })

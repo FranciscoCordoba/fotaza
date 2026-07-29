@@ -38,10 +38,20 @@ html
                 div(style="display: flex; flex-direction: row; align-items: center; gap: 8px;")
                     if prev
                         a(href="/publicacion/p/" + publicacion.id + "/" + prev.orden, style="margin-top: 5px; margin-right: 10px;") ⬅️
-                    img(src=imagen.url, alt=publicacion.titulo, style="max-width: 400px; border: 1px solid black; display: block; margin-top: 10px; margin-bottom: 10px;")
+                    
+                    div(style="position: relative; display: inline-block;")
+                        img(src=imagen.url, alt=publicacion.titulo, style="max-width: 400px; border: 1px solid black; display: block; margin-top: 10px; margin-bottom: 10px;")
+                                
                     if post
                         a(href="/publicacion/p/" + publicacion.id + "/" + post.orden, style="margin-top: 5px;") ➡️
                     
+                if publicacion.nickUsuario == nickUsuario && !imagen.copyright
+                    div(style="margin-top: 10px; border: 1px dashed #aaa; padding: 10px;")
+                        p(style="margin-top: 0;") <strong>Proteger Imagen</strong>
+                        form(action="/publicacion/imagen/" + imagen.id + "/copyright" method="POST")
+                            input(type="text", name="textoMarcaDeAgua", placeholder="ej: © 2026 Autor", required style="padding: 4px; margin-right: 5px;")
+                            button(type="submit" style="cursor:pointer; padding:4px 8px; border-radius:4px; border: 1px solid #ccc;") Aplicar Marca de Agua
+                
                 if publicacion.nickUsuario != nickUsuario
                     div(style="margin-top: 5px;")
                         button(onclick="window.location.href = '/publicacion/imagen/" + imagen.id + "/denunciar'" style="color: red; border: 1px solid red; background: white; padding: 4px 8px; border-radius: 4px; cursor: pointer;") Denunciar Imagen

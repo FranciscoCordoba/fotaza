@@ -7,7 +7,7 @@ import { usuarioSigueAModel } from "../models/usuarioSigueA.js";
 import { comunidadModel } from "../models/comunidad.js";
 import type { Request, Response } from "express";
 import type { publicacion } from "../utils/types.js";
-import { subirACaudinary } from "../utils/cloudinary.js";
+import { subirACaudinary, subirACaudinaryConMarcaDeAgua } from "../utils/cloudinary.js";
 import { usuarioSigueComunidadModel } from "../models/usuarioSigueComunidad.js";
 import { publicacionEnComunidadModel } from "../models/publicacionEnComunidad.js";
 import { denunciaComentarioModel } from "../models/denunciaComentario.js";
@@ -180,7 +180,7 @@ export class publicacionController {
         })
         const urls = await Promise.all(uploadPromises)
 
-        const saveImagePromises = urls.map((url, index) => imagenModel.create(idPublicacion, url, index + 1))
+        const saveImagePromises = urls.map((url, index) => imagenModel.create(idPublicacion, url, index + 1, false))
         await Promise.all(saveImagePromises)
 
         if (etiquetas && typeof etiquetas === 'string') {
@@ -205,7 +205,7 @@ export class publicacionController {
             await Promise.all(saveComunidadesPromises)
         }
 
-        return res.redirect('/feed')
+        return res.redirect(`/publicacion/p/${idPublicacion}/1`)
     }
 
     static async toggleComentariosImagen(req: Request, res: Response) {
@@ -321,5 +321,41 @@ export class publicacionController {
 
         const backURL = req.header('Referer') || '/feed';
         return res.redirect(backURL);
+    }
+
+    static async setCopyrightImagen(req: Request, res: Response) {
+        const { idImagen } = req.params;
+        const { textoMarcaDeAgua } = req.body;
+        const idImagenNum = Number(idImagen);
+
+        if (isNaN(idImagenNum) || !textoMarcaDeAgua || textoMarcaDeAgua.trim() === "") {
+            throw new Error("Datos invalidos");
+        }
+
+        const nickUsuario = req.session?.user?.nickname;
+        if (!nickUsuario) throw new Error("Usuario no logueado");
+
+        const imagen = await imagenModel.getById(idImagenNum);
+        if (!imagen) throw new Error("Imagen no encontrada");
+
+        const publicacion = await publicacionModel.getById(imagen.idPublicacion);
+        if (!publicacion || publicacion.nickUsuario !== nickUsuario) {
+            throw new Error("No tienes permiso");
+        }
+
+        if (imagen.copyright) {
+            throw new Error("La imagen ya tiene copyright");
+        }
+
+        const response = await fetch(imagen.url);
+        if (!response.ok) throw new Error("Error al descargar imagen desde Cloudinary");
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        const result: any = await subirACaudinaryConMarcaDeAgua(buffer, textoMarcaDeAgua.trim());
+
+        await imagenModel.updateUrlAndCopyright(idImagenNum, result.secure_url);
+
+        return res.redirect(`/publicacion/p/${imagen.idPublicacion}/${imagen.orden}`);
     }
 }

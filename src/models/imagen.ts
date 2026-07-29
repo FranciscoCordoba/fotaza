@@ -14,12 +14,12 @@ export class imagenModel {
         return imagen[0]
     }
 
-    static async create(idPublicacion: number, url: string, orden: number, textoMarcaDeAgua: string | null = null) {
+    static async create(idPublicacion: number, url: string, orden: number, copyright: boolean = false) {
         const nuevaImagen = await db.insert(imagenTable).values({
             idPublicacion,
             url,
             orden,
-            textoMarcaDeAgua
+            copyright
         }).returning()
         return nuevaImagen
     }
@@ -48,6 +48,11 @@ export class imagenModel {
     static async toggleComentariosActivos(id: number, activo: boolean) {
         const imagenActualizada = await db.update(imagenTable).set({ comentariosActivos: activo }).where(eq(imagenTable.id, id)).returning()
         return imagenActualizada
+    }
+
+    static async updateUrlAndCopyright(id: number, url: string) {
+        const imagenActualizada = await db.update(imagenTable).set({ url: url, copyright: true }).where(eq(imagenTable.id, id)).returning()
+        return imagenActualizada[0]
     }
 
 }

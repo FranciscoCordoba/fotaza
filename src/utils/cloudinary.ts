@@ -33,3 +33,35 @@ export const subirACaudinary = (bufferImg: Buffer) => {
         uploadStream.end(bufferImg)
     })
 }
+
+export const subirACaudinaryConMarcaDeAgua = (bufferImg: Buffer, textoMarcaDeAgua: string) => {
+    return new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+            { 
+                folder: 'fotaza',
+                transformation: [
+                    {
+                        overlay: {
+                            font_family: "Arial",
+                            font_size: 50,
+                            text: textoMarcaDeAgua
+                        },
+                        color: "white",
+                        gravity: "south_east",
+                        x: 20,
+                        y: 20
+                    }
+                ]
+            },
+            (error, result) => {
+                if (error) {
+                    console.error("Error subiendo a Cloudinary:", error)
+                    reject(error)
+                    return
+                }
+                resolve(result)
+            }
+        )
+        uploadStream.end(bufferImg)
+    })
+}
