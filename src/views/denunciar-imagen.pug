@@ -4,6 +4,8 @@ html
     body 
         h1 Denunciar Imagen
         
+        if error
+            p(style="color: red;")= error
         if yaDenunciado
             p(style="color: red;") Ya has denunciado esta imagen.
             button(onclick="window.location.href = '/publicacion/p/" + publicacion.id + "/" + imagen.orden + "'") Volver a la publicación

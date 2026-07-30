@@ -4,6 +4,8 @@ html
     body 
     
         div 
+            if error
+                p(style="color: red;")= error
             form(action="/auth/login" method="POST")
                 label(for="nickname") Nickname:
                 input(type="text", name="nickname") 

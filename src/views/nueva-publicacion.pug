@@ -4,6 +4,8 @@ html
 
     body 
         h1 subir publicacion
+        if error
+            p(style="color: red;")= error
         form(action="/publicacion/crear", method="POST", enctype="multipart/form-data")
             label(for="titulo") Titulo:
             input(type="text", name="titulo", id="titulo")

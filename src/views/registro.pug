@@ -5,6 +5,8 @@ html
     
         div 
             h2 Registro de Usuario
+            if error
+                p(style="color: red;")= error
             form(action="/auth/registro" method="POST")
                 label(for="nickname") Nickname:
                 input(type="text", name="nickname", required) 

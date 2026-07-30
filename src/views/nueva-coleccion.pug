@@ -3,11 +3,13 @@ html
         title Nueva Colección
     body 
         h1 Crear Nueva Colección para #{nickUsuario}
-
+        
+        if error
+            p(style="color: red;")= error
         form(action="/usuario/colecciones/nueva" method="POST")
             div(style="margin-bottom: 15px;")
                 label(for="nombreColeccion" style="display: block; font-weight: bold;") Nombre de la Colección:
-                input(type="text" id="nombreColeccion" name="nombreColeccion" required style="padding: 8px; width: 300px; margin-top: 5px;")
+                input(type="text" id="nombreColeccion" name="nombreColeccion" style="padding: 8px; width: 300px; margin-top: 5px;")
             
             h3 Publicaciones en 'Favoritos'
             p Selecciona las publicaciones que deseas agregar a la nueva colección:

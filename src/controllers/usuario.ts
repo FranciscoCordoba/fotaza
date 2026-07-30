@@ -1,50 +1,23 @@
-import { usuarioSigueAModel } from "../models/usuarioSigueA.js";
-import { usuarioModel } from "../models/usuario.js";
-import type { Request, Response } from "express";
-import type { mensajeInsert, usuarioInsert, usuarioSigueA, usuarioSigueAInsert } from "../utils/types.js";
-import { mensajeModel } from "../models/mensaje.js";
-import { publicacionModel } from "../models/publicacion.js";
-import { imagenModel } from "../models/imagen.js";
-import { notificacionModel } from "../models/notificacion.js";
-import { coleccionModel } from "../models/coleccion.js";
-import { z } from "zod";
-
-const perfilUsuarioParamsSchema = z.object({
-    nickname: z.string().min(1, 'Debe indicar un usuario')
-});
-
-const eliminarUsuarioBodySchema = z.object({
-    id: z.string().min(1)
-});
-
-const usuarioSigueABodySchema = z.object({
-    nickSeguido: z.string().min(1)
-});
-
-const seguirUsuarioBodySchema = z.object({
-    nickSeguido: z.string().min(1)
-});
-
-const dejarSeguirUsuarioBodySchema = z.object({
-    nickSeguido: z.string().min(1)
-});
-
-const listarSeguidoresBodySchema = z.object({
-    id: z.string().min(1)
-});
-
-const crearColeccionBodySchema = z.object({
-    nombreColeccion: z.string().trim().min(1, "Nombre de coleccion invalido"),
-    publicaciones: z.union([z.string(), z.number(), z.array(z.union([z.string(), z.number()]))]).optional()
-});
-
-const verColeccionDetalleParamsSchema = z.object({
-    nickColeccion: z.string().trim().min(1, "Coleccion no especificada")
-});
-
-const marcarNotificacionVistaParamsSchema = z.object({
-    id: z.coerce.number()
-});
+import { usuarioSigueAModel } from "../models/usuarioSigueA.js"
+import { usuarioModel } from "../models/usuario.js"
+import type { Request, Response } from "express"
+import type { mensajeInsert, usuarioInsert, usuarioSigueA, usuarioSigueAInsert } from "../utils/types.js"
+import { mensajeModel } from "../models/mensaje.js"
+import { publicacionModel } from "../models/publicacion.js"
+import { imagenModel } from "../models/imagen.js"
+import { notificacionModel } from "../models/notificacion.js"
+import { coleccionModel } from "../models/coleccion.js"
+import {
+    perfilUsuarioParamsSchema,
+    eliminarUsuarioBodySchema,
+    usuarioSigueABodySchema,
+    seguirUsuarioBodySchema,
+    dejarSeguirUsuarioBodySchema,
+    listarSeguidoresBodySchema,
+    crearColeccionBodySchema,
+    verColeccionDetalleParamsSchema,
+    marcarNotificacionVistaParamsSchema
+} from "../utils/schemas.js"
 
 export class usuarioController {
 
@@ -54,45 +27,48 @@ export class usuarioController {
     }
 
     static async perfilUsuario(req: Request, res: Response) {
-        const parseResult = perfilUsuarioParamsSchema.safeParse(req.params);
+        const parseResult = perfilUsuarioParamsSchema.safeParse(req.params)
 
-        if (!parseResult.success)
-            throw new Error('Debe indicar un usuario')
-
-        const { nickname } = parseResult.data;
-
-        const perfil = await usuarioModel.getByNickname(nickname);
-        if (!perfil) {
-            throw new Error('Usuario no encontrado');
+        if (!parseResult.success) {
+            const backURL = req.header('Referer') || '/feed'
+            return res.redirect(backURL)
         }
 
-        const publicaciones = await publicacionModel.getByNickUsuario(nickname);
+        const { nickname } = parseResult.data
+
+        const perfil = await usuarioModel.getByNickname(nickname)
+        if (!perfil) {
+            const backURL = req.header('Referer') || '/feed'
+            return res.redirect(backURL)
+        }
+
+        const publicaciones = await publicacionModel.getByNickUsuario(nickname)
         const publicacionesConDatos = await Promise.all(publicaciones.map(async publicacion => {
             const imagen = await imagenModel.getByIdPublicacionAndOrden(publicacion.id, 1)
             return {
                 ...publicacion,
                 imagen
             }
-        }));
+        }))
 
-        const nickUsuarioLogueado = req.session?.user?.nickname;
-        let esPropio = false;
-        let siguiendo = false;
+        const nickUsuarioLogueado = req.session!.user!.nickname
+        let esPropio = false
+        let siguiendo = false
 
         if (nickUsuarioLogueado === nickname) {
-            esPropio = true;
-        } else if (nickUsuarioLogueado) {
-            const follow = await usuarioSigueAModel.getByNicknames(nickUsuarioLogueado, nickname);
+            esPropio = true
+        } else {
+            const follow = await usuarioSigueAModel.getByNicknames(nickUsuarioLogueado, nickname)
             if (follow) {
-                siguiendo = true;
+                siguiendo = true
             }
         }
 
-        const seguidosArray = await usuarioSigueAModel.getAllSeguidos(nickname);
-        const seguidoresArray = await usuarioSigueAModel.getAllSeguidores(nickname);
+        const seguidosArray = await usuarioSigueAModel.getAllSeguidos(nickname)
+        const seguidoresArray = await usuarioSigueAModel.getAllSeguidores(nickname)
         
-        const cantidadSeguidos = seguidosArray.length;
-        const cantidadSeguidores = seguidoresArray.length;
+        const cantidadSeguidos = seguidosArray.length
+        const cantidadSeguidores = seguidoresArray.length
 
         return res.render('perfil', {
             perfil,
@@ -102,14 +78,14 @@ export class usuarioController {
             nickUsuarioLogueado,
             cantidadSeguidos,
             cantidadSeguidores
-        });
+        })
     }
     static async eliminarUsuario(req: Request, res: Response) {
-        const parseResult = eliminarUsuarioBodySchema.safeParse(req.body);
+        const parseResult = eliminarUsuarioBodySchema.safeParse(req.body)
         if (!parseResult.success) {
-            return res.status(400).json({ error: "ID de usuario inválido" });
+            return res.status(400).json({ error: "ID de usuario inválido" })
         }
-        const { id } = parseResult.data;
+        const { id } = parseResult.data
 
         const resultado = await usuarioModel.delete(id)
 
@@ -118,15 +94,16 @@ export class usuarioController {
 
     //Tabla usuarioSigueA
     static async usuarioSigueA(req: Request, res: Response) {
-        const parseResult = usuarioSigueABodySchema.safeParse(req.body);
+        const parseResult = usuarioSigueABodySchema.safeParse(req.body)
         if (!parseResult.success) {
-            throw new Error('Debe indicar el usuario');
+            return res.status(400).json({ error: "Debe indicar el usuario" })
         }
-        const { nickSeguido } = parseResult.data;
+        const { nickSeguido } = parseResult.data
         const nickSeguidor = req.session?.user?.nickname
 
-        if (!nickSeguidor)
-            throw new Error('No se pudo obtener el nick del usuario')
+        if (!nickSeguidor) {
+            return res.status(401).json({ error: "No se pudo obtener el nick del usuario" })
+        }
 
         const siguiendo = await usuarioSigueAModel.getByNicknames(nickSeguidor, nickSeguido)
         if (siguiendo)
@@ -136,172 +113,176 @@ export class usuarioController {
     }
 
     static async seguirUsuario(req: Request, res: Response) {
-        const parseResult = seguirUsuarioBodySchema.safeParse(req.body);
+        const backURL = req.header('Referer') || '/feed'
+        const parseResult = seguirUsuarioBodySchema.safeParse(req.body)
         if (!parseResult.success) {
-            throw new Error('Debe indicar el usuario');
+            return res.redirect(backURL)
         }
-        const { nickSeguido } = parseResult.data;
-        const nickSeguidor = req.session?.user?.nickname
-
-        if (!nickSeguidor)
-            throw new Error('No se pudo obtener el nick del usuario')
+        const { nickSeguido } = parseResult.data
+        const nickSeguidor = req.session!.user!.nickname
 
         const existe = await usuarioSigueAModel.getByNicknames(nickSeguidor, nickSeguido)
-        if (existe)
-            throw new Error('Ya sigues a este usuario')
+        if (existe) {
+            return res.redirect(backURL)
+        }
 
-        const follow = await usuarioSigueAModel.create({
+        await usuarioSigueAModel.create({
             nickSeguidor,
             nickSeguido
         })
 
-        await notificacionModel.create(nickSeguidor, nickSeguido, 'seguir');
+        await notificacionModel.create(nickSeguidor, nickSeguido, 'seguir')
 
-        const backURL = req.header('Referer') || '/feed'
         return res.redirect(backURL)
     }
 
     static async dejarSeguirUsuario(req: Request, res: Response) {
-        const parseResult = dejarSeguirUsuarioBodySchema.safeParse(req.body);
+        const backURL = req.header('Referer') || '/feed'
+        const parseResult = dejarSeguirUsuarioBodySchema.safeParse(req.body)
         if (!parseResult.success) {
-            throw new Error('Debe indicar el usuario');
+            return res.redirect(backURL)
         }
-        const { nickSeguido } = parseResult.data;
-        const nickSeguidor = req.session?.user?.nickname
-
-        if (!nickSeguidor)
-            throw new Error('No se pudo obtener el nick del usuario')
+        const { nickSeguido } = parseResult.data
+        const nickSeguidor = req.session!.user!.nickname
 
         const existe = await usuarioSigueAModel.getByNicknames(nickSeguidor, nickSeguido)
-        if (!existe)
-            throw new Error('No sigues a este usuario')
+        if (!existe) {
+            return res.redirect(backURL)
+        }
 
-        const unfollow = await usuarioSigueAModel.delete(nickSeguidor, nickSeguido)
+        await usuarioSigueAModel.delete(nickSeguidor, nickSeguido)
 
-        const backURL = req.header('Referer') || '/feed'
         return res.redirect(backURL)
     }
 
     static async listarSeguidores(req: Request, res: Response) {
-        const parseResult = listarSeguidoresBodySchema.safeParse(req.body);
+        const parseResult = listarSeguidoresBodySchema.safeParse(req.body)
         if (!parseResult.success) {
-            throw new Error('Debe indicar el id');
+            return res.status(400).json({ error: "Debe indicar el id" })
         }
-        const { id } = parseResult.data;
+        const { id } = parseResult.data
         const info: usuarioSigueA[] = await usuarioSigueAModel.getAllSeguidores(id)
-        return info
+        return res.json(info)
     }
 
     static async verColeccionesView(req: Request, res: Response) {
-        const nickUsuario = req.session?.user?.nickname;
-        if (!nickUsuario) throw new Error("Usuario no logueado");
+        const nickUsuario = req.session!.user!.nickname
 
-        const coleccionesBasicas = await coleccionModel.getColeccionesConUltimaPublicacion(nickUsuario);
+        const coleccionesBasicas = await coleccionModel.getColeccionesConUltimaPublicacion(nickUsuario)
 
         const colecciones = await Promise.all(coleccionesBasicas.map(async (col) => {
-            const imagen = await imagenModel.getByIdPublicacionAndOrden(col.idPublicacion, 1);
+            const imagen = await imagenModel.getByIdPublicacionAndOrden(col.idPublicacion, 1)
             return {
                 ...col,
                 imagen
             }
-        }));
+        }))
 
-        return res.render('colecciones', { colecciones, nickUsuario });
+        return res.render('colecciones', { colecciones, nickUsuario })
     }
 
     static async nuevaColeccionView(req: Request, res: Response) {
-        const nickUsuario = req.session?.user?.nickname;
-        if (!nickUsuario) throw new Error("Usuario no logueado");
+        const nickUsuario = req.session!.user!.nickname
 
-        const favs = await coleccionModel.getPublicacionesEnColeccion(nickUsuario, 'Favoritos');
+        const favs = await coleccionModel.getPublicacionesEnColeccion(nickUsuario, 'Favoritos')
 
         const publicacionesFav = await Promise.all(favs.map(async (fav) => {
-            const publicacion = await publicacionModel.getById(fav.idPublicacion);
-            const imagen = await imagenModel.getByIdPublicacionAndOrden(fav.idPublicacion, 1);
+            const publicacion = await publicacionModel.getById(fav.idPublicacion)
+            const imagen = await imagenModel.getByIdPublicacionAndOrden(fav.idPublicacion, 1)
             return {
                 ...publicacion,
                 imagen
             }
-        }));
+        }))
 
-        return res.render('nueva-coleccion', { publicacionesFav, nickUsuario });
+        return res.render('nueva-coleccion', { publicacionesFav, nickUsuario })
     }
 
     static async crearColeccion(req: Request, res: Response) {
-        const nickUsuario = req.session?.user?.nickname;
-        if (!nickUsuario) throw new Error("Usuario no logueado");
+        const nickUsuario = req.session!.user!.nickname
 
-        const parseResult = crearColeccionBodySchema.safeParse(req.body);
+        const parseResult = crearColeccionBodySchema.safeParse(req.body)
         if (!parseResult.success) {
-            throw new Error("Nombre de coleccion invalido");
+            const favs = await coleccionModel.getPublicacionesEnColeccion(nickUsuario, 'Favoritos')
+
+            const publicacionesFav = await Promise.all(favs.map(async (fav) => {
+                const publicacion = await publicacionModel.getById(fav.idPublicacion)
+                const imagen = await imagenModel.getByIdPublicacionAndOrden(fav.idPublicacion, 1)
+                return {
+                    ...publicacion,
+                    imagen
+                }
+            }))
+
+            return res.render('nueva-coleccion', { error: "Nombre de coleccion invalido", publicacionesFav, nickUsuario })
         }
 
-        const { nombreColeccion: nombre, publicaciones } = parseResult.data;
+        const { nombreColeccion: nombre, publicaciones } = parseResult.data
 
-        let ids: number[] = [];
+        let ids: number[] = []
         if (publicaciones) {
             if (Array.isArray(publicaciones)) {
-                ids = publicaciones.map(p => Number(p));
+                ids = publicaciones.map(p => Number(p))
             } else {
-                ids = [Number(publicaciones)];
+                ids = [Number(publicaciones)]
             }
         }
 
         const promesas = ids.map(idPub => {
             if (!isNaN(idPub)) {
-                return coleccionModel.create(nickUsuario, nombre, idPub);
+                return coleccionModel.create(nickUsuario, nombre, idPub)
             }
-        });
+        })
 
-        await Promise.all(promesas);
+        await Promise.all(promesas)
 
-        return res.redirect('/usuario/colecciones');
+        return res.redirect('/usuario/colecciones')
     }
 
     static async verColeccionDetalleView(req: Request, res: Response) {
-        const nickUsuario = req.session?.user?.nickname;
-        if (!nickUsuario) throw new Error("Usuario no logueado");
+        const nickUsuario = req.session!.user!.nickname
 
-        const parseResult = verColeccionDetalleParamsSchema.safeParse(req.params);
-        if (!parseResult.success) throw new Error("Coleccion no especificada");
+        const parseResult = verColeccionDetalleParamsSchema.safeParse(req.params)
+        if (!parseResult.success) {
+            const backURL = req.header('Referer') || '/usuario/colecciones'
+            return res.redirect(backURL)
+        }
 
-        const { nickColeccion } = parseResult.data;
+        const { nickColeccion } = parseResult.data
 
-        const pubsEnColeccion = await coleccionModel.getPublicacionesEnColeccion(nickUsuario, nickColeccion);
+        const pubsEnColeccion = await coleccionModel.getPublicacionesEnColeccion(nickUsuario, nickColeccion)
 
         const publicaciones = await Promise.all(pubsEnColeccion.map(async (col) => {
-            const publicacion = await publicacionModel.getById(col.idPublicacion);
-            const imagen = await imagenModel.getByIdPublicacionAndOrden(col.idPublicacion, 1);
+            const publicacion = await publicacionModel.getById(col.idPublicacion)
+            const imagen = await imagenModel.getByIdPublicacionAndOrden(col.idPublicacion, 1)
             return {
                 ...publicacion,
                 imagen
             }
-        }));
+        }))
 
-        return res.render('coleccion-detalle', { publicaciones, nickColeccion, nickUsuario });
+        return res.render('coleccion-detalle', { publicaciones, nickColeccion, nickUsuario })
     }
 
     static async verNotificacionesView(req: Request, res: Response) {
-        const nickUsuario = req.session?.user?.nickname;
-        if (!nickUsuario) throw new Error("Usuario no logueado");
+        const nickUsuario = req.session!.user!.nickname
 
-        const notificaciones = await notificacionModel.getByNickname(nickUsuario);
+        const notificaciones = await notificacionModel.getByNickname(nickUsuario)
 
-        return res.render('notificaciones', { notificaciones, nickUsuario });
+        return res.render('notificaciones', { notificaciones, nickUsuario })
     }
 
     static async marcarNotificacionVista(req: Request, res: Response) {
-        const nickUsuario = req.session?.user?.nickname;
-        if (!nickUsuario) throw new Error("Usuario no logueado");
+        const backURL = req.header('Referer') || '/usuario/notificaciones'
+        const nickUsuario = req.session!.user!.nickname
 
-        const parseResult = marcarNotificacionVistaParamsSchema.safeParse(req.params);
-        if (!parseResult.success) throw new Error("ID invalido");
+        const parseResult = marcarNotificacionVistaParamsSchema.safeParse(req.params)
+        if (!parseResult.success) return res.redirect(backURL)
 
-        const idNum = parseResult.data.id;
+        const idNum = parseResult.data.id
 
-        await notificacionModel.marcarComoVista(idNum, nickUsuario);
+        await notificacionModel.marcarComoVista(idNum, nickUsuario)
 
-        const backURL = req.header('Referer') || '/usuario/notificaciones';
-        return res.redirect(backURL);
+        return res.redirect(backURL)
     }
 }

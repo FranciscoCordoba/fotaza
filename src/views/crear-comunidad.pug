@@ -4,12 +4,14 @@ html
 
     body 
         h1 Crear una nueva comunidad
+        if error
+            p(style="color: red;")= error
         form(action="/comunidad/crear", method="POST", enctype="multipart/form-data")
             label(for="nickComunidad") Nick de la Comunidad (único, ej: fotografia_digital):
-            input(type="text", name="nickComunidad", id="nickComunidad", required)
+            input(type="text", name="nickComunidad", id="nickComunidad")
             br
             label(for="titulo") Título de la Comunidad:
-            input(type="text", name="titulo", id="titulo", required)
+            input(type="text", name="titulo", id="titulo")
             br
             label(for="descripcion") Descripción:
             textarea(name="descripcion", id="descripcion", rows="4", cols="50")
