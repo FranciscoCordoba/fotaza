@@ -1,25 +1,34 @@
-html 
-    head 
-        title Crear Comunidad 
+extends layouts/app.pug
 
-    body 
-        h1 Crear una nueva comunidad
-        if error
-            p(style="color: red;")= error
+block content
+  div(style="max-width: 720px; margin: 0 auto;")
+    h1.page-title Crear una nueva comunidad
+    
+    if error
+      .alert.alert-danger= error
+      
+    .card
+      .card-content(style="padding: 32px;")
         form(action="/comunidad/crear", method="POST", enctype="multipart/form-data")
-            label(for="nickComunidad") Nick de la Comunidad (único, ej: fotografia_digital):
-            input(type="text", name="nickComunidad", id="nickComunidad")
-            br
-            label(for="titulo") Título de la Comunidad:
-            input(type="text", name="titulo", id="titulo")
-            br
-            label(for="descripcion") Descripción:
-            textarea(name="descripcion", id="descripcion", rows="4", cols="50")
-            br
-            label(for="normas") Normas de la Comunidad:
-            textarea(name="normas", id="normas", rows="4", cols="50")
-            br
-            label(for="imagen") Imagen (Logo/Banner - Máx 4MB):
-            input(type="file", name="imagen", accept="image/*", id="imagen")
-            br
-            button(type="submit") Crear Comunidad
+          .form-group
+            label.form-label(for="nickComunidad") Nick de la Comunidad (único, ej: fotografia_digital):
+            input.form-control(type="text", name="nickComunidad", id="nickComunidad")
+            
+          .form-group
+            label.form-label(for="titulo") Título de la Comunidad:
+            input.form-control(type="text", name="titulo", id="titulo")
+            
+          .form-group
+            label.form-label(for="descripcion") Descripción:
+            textarea.form-control(name="descripcion", id="descripcion", rows="4")
+            
+          .form-group
+            label.form-label(for="normas") Normas de la Comunidad:
+            textarea.form-control(name="normas", id="normas", rows="4")
+            
+          .form-group
+            label.form-label(for="imagen") Imagen (Logo/Banner - Máx 4MB):
+            input.form-control(type="file", name="imagen", accept="image/*", id="imagen")
+            
+          .mt-6
+            button.btn.btn-primary(type="submit") Crear Comunidad

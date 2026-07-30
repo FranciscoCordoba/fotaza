@@ -1,38 +1,50 @@
-html 
-    head 
-        title Explorar contenido
+extends layouts/app
 
-    body 
-        form(action="/publicacion/buscar", method="GET")
-            input(type="text", name="busqueda", placeholder="Buscar")
-            button Buscar 
+block content
+  .d-flex.justify-between.align-center.mb-6
+    h1.page-title Explorar contenido
 
-        div
-            div#publicaciones
-                each publicacion in publicacionesConDatos
-                    div 
-                        h2= publicacion.titulo
-                        p= publicacion.descripcion
-                        div 
-                            img(src=publicacion.imagen.url, alt=publicacion.titulo, style="width: 200px;")
-                        div 
-                            each etiqueta in publicacion.etiquetas
-                                span(style="margin: 0 5px 0 0;")= "#" + etiqueta.etiqueta
-                        a(href="/publicacion/p/" + publicacion.id + "/1", style="margin-top: 5px;") Ver publicacion
-            //div#cuentas
-            div#comunidades
-                if comunidades && comunidades.length > 0
-                    h1 Comunidades
-                    each comunidad in comunidades
-                        div(style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;")
-                            h2= comunidad.titulo
-                            p
-                                strong Nickname: 
-                                | #{comunidad.nickComunidad}
-                            if comunidad.descripcion
-                                p= comunidad.descripcion
-                            if comunidad.imagen
-                                img(src=comunidad.imagen, alt=comunidad.titulo, style="width: 100px; display: block; margin-top: 5px; margin-bottom: 5px;")
-                            button(onclick="window.location.href = '/comunidad/" + comunidad.nickComunidad + "'") Ir al perfil de la comunidad
+  form.mb-6(action="/publicacion/buscar", method="GET")
+    .d-flex.gap-4
+      input.form-control.flex-1(type="text", name="busqueda", placeholder="Buscar publicaciones...")
+      button.btn.btn-primary(type="submit") Buscar 
 
-        //aca deberian ir las PUBLICACIONES - CUENTAS - COMUNIDADES
+  .mb-6
+    h2.section-title Publicaciones Destacadas
+    if publicacionesConDatos && publicacionesConDatos.length > 0
+      .gallery-grid
+        each publicacion in publicacionesConDatos
+          a.card(href=`/publicacion/p/${publicacion.id}/1`)
+            .card-image-wrapper
+              if publicacion.imagen
+                img.card-image(src=publicacion.imagen.url, alt=publicacion.titulo)
+              else
+                .d-flex.align-center.justify-center(style="height: 100%; color: var(--text-muted);") Sin imagen
+            .card-content
+              h3.card-title= publicacion.titulo
+              p.text-body(style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;")= publicacion.descripcion
+              if publicacion.etiquetas && publicacion.etiquetas.length > 0
+                .tag-list.mt-4
+                  each etiqueta in publicacion.etiquetas
+                    span.tag ##{etiqueta.etiqueta}
+    else
+      .empty-state
+        h2.empty-state-title No hay publicaciones
+        p.text-secondary No se encontraron publicaciones recientes.
+  
+  .mb-6
+    if comunidades && comunidades.length > 0
+      h2.section-title Comunidades
+      .gallery-grid
+        each comunidad in comunidades
+          a.card(href=`/comunidad/${comunidad.nickComunidad}`)
+            .card-image-wrapper.wide
+              if comunidad.imagen
+                img.card-image(src=comunidad.imagen, alt=comunidad.titulo)
+              else
+                .d-flex.align-center.justify-center(style="height: 100%; color: var(--text-muted); background: var(--surface-high);") Sin imagen
+            .card-content
+              h3.card-title= comunidad.titulo
+              p.text-metadata Nickname: #{comunidad.nickComunidad}
+              if comunidad.descripcion
+                p.text-body(style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;")= comunidad.descripcion

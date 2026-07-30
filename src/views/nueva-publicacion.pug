@@ -1,29 +1,39 @@
-html 
-    head 
-        title Nueva Publicacion 
+extends layouts/app.pug
 
-    body 
-        h1 subir publicacion
-        if error
-            p(style="color: red;")= error
+block content
+  div(style="max-width: 720px; margin: 0 auto;")
+    h1.page-title Subir publicación
+    
+    if error
+      .alert.alert-danger= error
+      
+    .card
+      .card-content(style="padding: 32px;")
         form(action="/publicacion/crear", method="POST", enctype="multipart/form-data")
-            label(for="titulo") Titulo:
-            input(type="text", name="titulo", id="titulo")
-            br
-            label(for="descripcion") Descripcion:
-            input(type="text", name="descripcion", id="descripcion")
-            br
-            label(for="imagenes") Imágenes (Máx 4MB en total):
-            input(type="file", name="imagenes", multiple, accept="image/*", id="imagenes")
-            br
-            label(for="etiquetas") Etiquetas (separadas por espacio y con #):
-            input(type="text", name="etiquetas", id="etiquetas", placeholder="ej: #naturaleza #playa #sol")
-            br
-            if comunidadesSigue && comunidadesSigue.length > 0
-                label Compartir en comunidades:
-                br
+          .form-group
+            label.form-label(for="titulo") Título:
+            input.form-control(type="text", name="titulo", id="titulo")
+            
+          .form-group
+            label.form-label(for="descripcion") Descripción:
+            input.form-control(type="text", name="descripcion", id="descripcion")
+            
+          .form-group
+            label.form-label(for="imagenes") Imágenes (Máx 4MB en total):
+            input.form-control(type="file", name="imagenes", multiple, accept="image/*", id="imagenes")
+            
+          .form-group
+            label.form-label(for="etiquetas") Etiquetas (separadas por espacio y con #):
+            input.form-control(type="text", name="etiquetas", id="etiquetas", placeholder="ej: #naturaleza #playa #sol")
+            
+          if comunidadesSigue && comunidadesSigue.length > 0
+            .form-group
+              label.form-label Compartir en comunidades:
+              .card(style="padding: 16px; background-color: var(--surface-low); border-radius: 6px;")
                 each comunidad in comunidadesSigue
+                  .d-flex.align-center.gap-2(style="margin-bottom: 8px;")
                     input(type="checkbox", name="comunidades", value=comunidad.nickComunidad, id=`comunidad-${comunidad.nickComunidad}`)
-                    label(for=`comunidad-${comunidad.nickComunidad}`)= comunidad.nickComunidad
-                    br
-            button Enviar
+                    label.text-body(for=`comunidad-${comunidad.nickComunidad}`)= comunidad.nickComunidad
+          
+          .mt-6
+            button.btn.btn-primary(type="submit") Enviar

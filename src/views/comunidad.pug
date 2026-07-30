@@ -1,47 +1,76 @@
-html 
-    head 
-        title #{comunidad.titulo} - Comunidad
-    body 
-        div(style="border-bottom: 2px solid #ccc; padding-bottom: 10px; margin-bottom: 20px;")
-            h1 Comunidad: #{comunidad.titulo}
-            p
-                strong Nickname: 
-                | #{comunidad.nickComunidad}
+extends layouts/app
 
-            if siguiendo
-                form(action=`/comunidad/${comunidad.nickComunidad}/dejar-seguir`, method="POST", style="display: inline-block;")
-                    button(type="submit") Dejar de Seguir
-            else
-                form(action=`/comunidad/${comunidad.nickComunidad}/seguir`, method="POST", style="display: inline-block;")
-                    button(type="submit") Seguir
-            br
-            br
+block content
+  .profile-header
+    if comunidad.imagen
+      img.profile-avatar(src=comunidad.imagen, alt=comunidad.titulo, style="object-fit: cover;")
+    else
+      .profile-avatar
+        span= comunidad.titulo.charAt(0).toUpperCase()
 
-            if comunidad.imagen
-                img(src=comunidad.imagen, alt=comunidad.titulo, style="width: 150px; display: block; margin-bottom: 10px;")
-            if comunidad.descripcion
-                p
-                    strong Descripción: 
-                    | #{comunidad.descripcion}
-            if comunidad.normas
-                p
-                    strong Normas: 
-                    | #{comunidad.normas}
+    .profile-info
+      h1.page-title(style="margin-bottom: 8px;")= comunidad.titulo
+      p.text-metadata.mb-4 @#{comunidad.nickComunidad}
+      
+      if comunidad.descripcion
+        p.text-body.mb-4= comunidad.descripcion
 
-        h2 Publicaciones en #{comunidad.titulo}
+      if comunidad.normas
+        .alert(style="background-color: var(--surface-low); border: 1px solid var(--border);")
+          strong.text-label Normas: 
+          span.text-body= comunidad.normas
 
-        if publicaciones && publicaciones.length > 0
-            .publicaciones
-                each publicacion in publicaciones 
-                    div.publicacion(style="border:1px solid black; margin: 5px; padding: 10px;")
-                        p #{publicacion.nickUsuario} - #{publicacion.titulo}
-                        p #{publicacion.descripcion}
-                        if publicacion.etiquetas && publicacion.etiquetas.length > 0
-                            p(style="margin: 5px 0; font-size: 0.85em; color: #666;")
-                                each etiqueta in publicacion.etiquetas
-                                    span(style="margin-right: 5px; background-color: #f0f0f0; padding: 2px 6px; border-radius: 4px; display: inline-block;") ##{etiqueta.etiqueta}
-                        if publicacion.imagen
-                            img(src=publicacion.imagen.url, alt=publicacion.titulo, style="width: 200px; display: block; margin-top: 5px;")
-                        button(onclick="window.location.href = '/publicacion/p/" + publicacion.id + "/1'", style="margin-top: 5px;") Ver
-        else 
-            p Aún no hay publicaciones en esta comunidad.
+    .profile-actions
+      if siguiendo
+        form(action=`/comunidad/${comunidad.nickComunidad}/dejar-seguir`, method="POST")
+          button.btn.btn-secondary(type="submit") Dejar de Seguir
+      else
+        form(action=`/comunidad/${comunidad.nickComunidad}/seguir`, method="POST")
+          button.btn.btn-primary(type="submit") Seguir
+
+  h2.section-title.mb-6 Publicaciones en #{comunidad.titulo}
+
+  if publicaciones && publicaciones.length > 0
+    .gallery-grid
+      each publicacion in publicaciones 
+        .card
+          a(href=`/publicacion/p/${publicacion.id}/1` style="display:block; text-decoration: none; color: inherit;")
+            .card-image-wrapper
+              if publicacion.imagen
+                img.card-image(src=publicacion.imagen.url, alt=publicacion.titulo)
+              else
+                .d-flex.align-center.justify-center(style="height: 100%; color: var(--text-muted);") Sin imagen
+            .card-content
+              h3.card-title= publicacion.titulo
+              p.text-body(style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;")= publicacion.descripcion
+              p.text-metadata Por #{publicacion.nickUsuario}
+              if publicacion.etiquetas && publicacion.etiquetas.length > 0
+                .tag-list.mt-4
+                  each etiqueta in publicacion.etiquetas
+                    span.tag ##{etiqueta.etiqueta}
+          if siguiendo && publicacion.nickUsuario === nickUsuario
+            form(action=`/comunidad/${comunidad.nickComunidad}/dejar-compartir` method="POST" style="padding: 0 16px 16px;")
+              input(type="hidden" name="idPublicacion" value=publicacion.id)
+              button.btn.btn-danger.btn-block(type="submit") Dejar de compartir
+  else
+    .empty-state
+      h2.empty-state-title Sin publicaciones
+      p.text-secondary Aún no hay publicaciones en esta comunidad.
+
+  if siguiendo
+    h2.section-title.mt-6 Compartir mis publicaciones
+    if misPublicacionesDisponibles && misPublicacionesDisponibles.length > 0
+      form(action=`/comunidad/${comunidad.nickComunidad}/compartir` method="POST")
+        .gallery-grid
+          each pub in misPublicacionesDisponibles
+            label.card(style="cursor: pointer; display: block;")
+              .card-content.d-flex.align-center.gap-2(style="padding-bottom: 0;")
+                input(type="checkbox" name="publicaciones" value=pub.id)
+                h4.card-title= pub.titulo
+              if pub.imagen
+                .card-image-wrapper.mt-4
+                  img.card-image(src=pub.imagen.url, alt=pub.titulo)
+        .mt-4
+          button.btn.btn-primary(type="submit") Compartir Seleccionadas
+    else
+      .alert.alert-info(style="margin-top: 16px; background-color: var(--surface-low); border: 1px solid var(--border);") No tienes más publicaciones disponibles para compartir en esta comunidad.

@@ -11,9 +11,9 @@ const PORT = process.env.PORT || 3000
 
 app.get('/', (req, res) => {
     if (req?.session?.user)
-        res.redirect('/feed')
+        return res.redirect('/feed')
 
-    res.redirect('/auth/login')
+    return res.redirect('/auth/login')
 })
 
 

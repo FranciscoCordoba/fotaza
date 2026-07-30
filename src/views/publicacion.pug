@@ -1,112 +1,126 @@
-html 
-    head 
-        title Publicacion #{publicacion.id}
+extends layouts/app
 
-    body 
+block content
+  .pub-detail-container
+    // Left side: Image and navigation
+    .pub-detail-image-section
+      if imagen
+        .d-flex.align-center.gap-4(style="width: 100%; justify-content: center; min-width: 0;")
+          if prev
+            a.btn.btn-secondary(href=`/publicacion/p/${publicacion.id}/${prev.orden}`, title="Anterior", style="flex-shrink: 0;")
+              | &larr;
+          img.pub-detail-image(src=imagen.url, alt=publicacion.titulo)
+          if post
+            a.btn.btn-secondary(href=`/publicacion/p/${publicacion.id}/${post.orden}`, title="Siguiente", style="flex-shrink: 0;")
+              | &rarr;
+      else
+        .empty-state
+          .empty-state-title Sin Imágenes
+          p No hay imagenes
 
-        h1 Publicacion #{publicacion.id}
-        p #{publicacion.nickUsuario} 
-
+    // Right side: Info, author, actions, comments
+    .pub-detail-sidebar
+      // Author and follow logic
+      .d-flex.justify-between.align-center
+        .d-flex.align-center.gap-2
+          .profile-avatar(style="width: 40px; height: 40px; font-size: 16px;")
+            if publicacion.nickUsuario
+              | #{publicacion.nickUsuario.charAt(0).toUpperCase()}
+          span.text-label #{publicacion.nickUsuario}
+        
         if publicacion.nickUsuario != nickUsuario
-            if siguiendo
-                form(action="/usuario/dejar_seguir" method="post")
-                    input(type="hidden" name="nickSeguido" value=publicacion.nickUsuario)
-                    button(type="submit") Dejar de seguir
+          if siguiendo
+            form(action="/usuario/dejar_seguir" method="post")
+              input(type="hidden" name="nickSeguido" value=publicacion.nickUsuario)
+              button.btn.btn-secondary(type="submit") Dejar de seguir
+          else
+            form(action="/usuario/seguir" method="post")
+              input(type="hidden" name="nickSeguido" value=publicacion.nickUsuario)
+              button.btn.btn-primary(type="submit") Seguir
+
+      // Title & Desc
+      h1.card-title.mt-4 #{publicacion.titulo}
+      p.text-body.text-secondary #{publicacion.descripcion}
+
+      // Tags
+      if etiquetas && etiquetas.length > 0
+        .tag-list.mt-4
+          each etiqueta in etiquetas
+            span.tag ##{etiqueta.etiqueta}
+
+      // Actions (Favorite)
+      if nickUsuario
+        .mt-4
+          form(action=`/publicacion/${publicacion.id}/favorito` method="post")
+            if enFavoritos
+              button.btn.btn-secondary.btn-block(type="submit") ★ Quitar de Favoritos
             else
-                form(action="/usuario/seguir" method="post")
-                    input(type="hidden" name="nickSeguido" value=publicacion.nickUsuario)
-                    button(type="submit") Seguir
+              button.btn.btn-secondary.btn-block(type="submit") ☆ Guardar en Favoritos
+      
+      // Image Specific Actions (if imagen)
+      if imagen
+        if publicacion.nickUsuario == nickUsuario && !imagen.copyright
+          .card.card-content.mt-6
+            h3.card-title.mb-4 Proteger Imagen
+            form.d-flex.gap-2(action=`/publicacion/imagen/${imagen.id}/copyright` method="POST")
+              input.form-control.flex-1(type="text", name="textoMarcaDeAgua", placeholder="ej: © 2026 Autor", required)
+              button.btn.btn-primary(type="submit") Aplicar
+        
+        if publicacion.nickUsuario != nickUsuario
+          .d-flex.align-center.gap-4.mt-6
+            button.btn.btn-danger(type="button" onclick=`window.location.href = '/publicacion/imagen/${imagen.id}/denunciar'`) Denunciar Imagen
+            if imagen.copyright
+              if yaInteresado
+                span.text-success.d-flex.align-center.gap-2 ✓ Ya mostraste interés
+              else
+                form(action=`/publicacion/imagen/${imagen.id}/interesar` method="POST")
+                  button.btn.btn-primary(type="submit") Me interesa adquirirla
+          
+        .card.card-content.mt-6
+          h3.card-title.mb-4 Valoración
+          if statsValoracion && statsValoracion.cantidad > 0
+            p.text-body Promedio: <strong>#{statsValoracion.promedio} / 5</strong> (basado en #{statsValoracion.cantidad} votos)
+          else if publicacion.nickUsuario != nickUsuario
+            p.text-muted Sé el primero en valorar esta imagen.
+          else
+            p.text-muted Aún no hay valoraciones.
 
-        h3 #{publicacion.titulo}
-        p #{publicacion.descripcion}
+          if publicacion.nickUsuario != nickUsuario
+            form(action=`/publicacion/imagen/${imagen.id}/valorar` method="POST")
+              .d-flex.gap-2.mt-4
+                button.btn.btn-secondary(type="submit" name="puntaje" value="1") 1 ⭐
+                button.btn.btn-secondary(type="submit" name="puntaje" value="2") 2 ⭐
+                button.btn.btn-secondary(type="submit" name="puntaje" value="3") 3 ⭐
+                button.btn.btn-secondary(type="submit" name="puntaje" value="4") 4 ⭐
+                button.btn.btn-secondary(type="submit" name="puntaje" value="5") 5 ⭐
+        
+        .mt-6
+          .d-flex.justify-between.align-center.mb-4
+            h3.section-title Comentarios
+            if publicacion.nickUsuario == nickUsuario
+              form(action=`/publicacion/imagen/${imagen.id}/toggle-comentarios` method="POST")
+                input(type="hidden" name="comentariosActivos" value=imagen.comentariosActivos ? 'false' : 'true')
+                button.btn.btn-secondary(type="submit") #{imagen.comentariosActivos ? 'Desactivar Comentarios' : 'Activar Comentarios'}
 
-        if nickUsuario
-            form(action="/publicacion/" + publicacion.id + "/favorito" method="post" style="margin-top: 10px; margin-bottom: 10px;")
-                if enFavoritos
-                    button(type="submit" style="background-color: #ffd700; border: 1px solid #cca300; padding: 6px 12px; border-radius: 4px; cursor: pointer;") ★ Quitar de Favoritos
-                else
-                    button(type="submit" style="background-color: white; border: 1px solid #ccc; padding: 6px 12px; border-radius: 4px; cursor: pointer;") ☆ Guardar en Favoritos
+          if comentarios && comentarios.length > 0
+            .comments-section
+              each comentario in comentarios
+                .comment
+                  .comment-header
+                    span.comment-author #{comentario.nickUsuario}
+                    span.text-metadata #{new Date(comentario.createdAt).toLocaleDateString()}
+                  p.comment-body.mt-2 #{comentario.texto}
+                  if comentario.nickUsuario != publicacion.nickUsuario && comentario.nickUsuario != nickUsuario
+                    form.mt-2(action=`/publicacion/comentario/${comentario.id}/denunciar` method="POST")
+                      button.btn.btn-ghost.text-danger(type="submit", style="padding: 0; font-size: 13px;") Denunciar
+          else
+            .empty-state.mt-4
+              p Aún no hay comentarios. ¡Sé el primero!
 
-        if etiquetas && etiquetas.length > 0
-            p(style="margin-top: 10px; margin-bottom: 15px;")
-                strong Etiquetas: 
-                each etiqueta in etiquetas
-                    span(style="margin-right: 8px; background-color: #f0f0f0; padding: 4px 8px; border-radius: 4px; font-size: 0.9em; font-family: sans-serif;") ##{etiqueta.etiqueta}
-
-        div.imagen(style="margin-top: 15px;")
-            if imagen
-                div(style="display: flex; flex-direction: row; align-items: center; gap: 8px;")
-                    if prev
-                        a(href="/publicacion/p/" + publicacion.id + "/" + prev.orden, style="margin-top: 5px; margin-right: 10px;") ⬅️
-                    
-                    div(style="position: relative; display: inline-block;")
-                        img(src=imagen.url, alt=publicacion.titulo, style="max-width: 400px; border: 1px solid black; display: block; margin-top: 10px; margin-bottom: 10px;")
-                                
-                    if post
-                        a(href="/publicacion/p/" + publicacion.id + "/" + post.orden, style="margin-top: 5px;") ➡️
-                    
-                if publicacion.nickUsuario == nickUsuario && !imagen.copyright
-                    div(style="margin-top: 10px; border: 1px dashed #aaa; padding: 10px;")
-                        p(style="margin-top: 0;") <strong>Proteger Imagen</strong>
-                        form(action="/publicacion/imagen/" + imagen.id + "/copyright" method="POST")
-                            input(type="text", name="textoMarcaDeAgua", placeholder="ej: © 2026 Autor", required style="padding: 4px; margin-right: 5px;")
-                            button(type="submit" style="cursor:pointer; padding:4px 8px; border-radius:4px; border: 1px solid #ccc;") Aplicar Marca de Agua
-                
-                if publicacion.nickUsuario != nickUsuario
-                    div(style="margin-top: 5px;")
-                        button(onclick="window.location.href = '/publicacion/imagen/" + imagen.id + "/denunciar'" style="color: red; border: 1px solid red; background: white; padding: 4px 8px; border-radius: 4px; cursor: pointer;") Denunciar Imagen
-                        if imagen.copyright
-                            if yaInteresado
-                                span(style="margin-left: 10px; color: green; font-weight: bold;") ✓ Ya mostraste interés
-                            else
-                                form(action="/publicacion/imagen/" + imagen.id + "/interesar" method="POST" style="display: inline-block; margin-left: 10px;")
-                                    button(type="submit" style="color: #fff; border: 1px solid #0056b3; background: #007bff; padding: 4px 8px; border-radius: 4px; cursor: pointer;") Me interesa adquirirla
-                    
-                div(style="margin-top: 15px; padding: 10px; border: 1px solid black; border-radius: 4px; display: inline-block;")
-                    if statsValoracion && statsValoracion.cantidad > 0
-                        p Promedio: <strong>#{statsValoracion.promedio} / 5</strong> (basado en #{statsValoracion.cantidad} votos)
-                    else if publicacion.nickUsuario != nickUsuario
-                        p Sé el primero en valorar esta imagen.
-                    else
-                        p Aún no hay valoraciones.
-
-                    if publicacion.nickUsuario != nickUsuario
-                        form(action="/publicacion/imagen/" + imagen.id + "/valorar" method="POST" style="margin-top: 10px;")
-                            div(style="display: flex; gap: 8px;")
-                                button(type="submit" name="puntaje" value="1" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 1 ⭐
-                                button(type="submit" name="puntaje" value="2" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 2 ⭐
-                                button(type="submit" name="puntaje" value="3" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 3 ⭐
-                                button(type="submit" name="puntaje" value="4" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 4 ⭐
-                                button(type="submit" name="puntaje" value="5" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") 5 ⭐
-                
-                div(style="margin-top: 20px; padding: 15px; border: 1px solid black; border-radius: 4px;")
-                    h3 Comentarios
-                    if publicacion.nickUsuario == nickUsuario
-                        form(action="/publicacion/imagen/" + imagen.id + "/toggle-comentarios" method="POST" style="margin-bottom: 15px;")
-                            input(type="hidden" name="comentariosActivos" value=imagen.comentariosActivos ? 'false' : 'true')
-                            button(type="submit" style="padding: 6px 12px; cursor: pointer; border: 1px solid #ccc; background: white; border-radius: 4px;") #{imagen.comentariosActivos ? 'Desactivar Comentarios' : 'Activar Comentarios'}
-
-                    if comentarios && comentarios.length > 0
-                        ul(style="list-style-type: none; padding: 0;")
-                            each comentario in comentarios
-                                li(style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #ccc;")
-                                    strong #{comentario.nickUsuario} 
-                                    span(style="color: #666;") - #{new Date(comentario.createdAt).toLocaleDateString()}
-                                    p(style="margin: 5px 0 0 0;") #{comentario.texto}
-                                    if comentario.nickUsuario != publicacion.nickUsuario && comentario.nickUsuario != nickUsuario
-                                        form(action="/publicacion/comentario/" + comentario.id + "/denunciar" method="POST" style="margin-top: 5px; display: inline-block;")
-                                            button(type="submit" style="color: red; border: none; background: none; cursor: pointer; text-decoration: underline;") Denunciar
-                    else
-                        p(style="color: #666;") Aún no hay comentarios. ¡Sé el primero!
-
-                    if imagen.comentariosActivos
-                        form(action="/publicacion/imagen/" + imagen.id + "/comentar" method="POST" style="margin-top: 15px;")
-                            textarea(name="texto" rows="3" style="width: 100%; max-width: 400px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" placeholder="Escribe tu comentario aquí..." required)
-                            br
-                            button(type="submit" style="margin-top: 5px; padding: 6px 15px; border-radius: 4px;") Enviar comentario
-                    else
-                        p(style="color: red; margin-top: 15px;") Los comentarios están desactivados para esta imagen.
-
-
-            else
-                p(style="color: red;") No hay imagenes
+          if imagen.comentariosActivos
+            form.mt-6(action=`/publicacion/imagen/${imagen.id}/comentar` method="POST")
+              .form-group
+                textarea.form-control(name="texto" rows="3" placeholder="Escribe tu comentario aquí..." required)
+              button.btn.btn-primary.btn-block(type="submit") Enviar comentario
+          else
+            .alert.alert-danger.mt-6 Los comentarios están desactivados para esta imagen.

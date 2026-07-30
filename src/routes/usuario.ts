@@ -17,6 +17,8 @@ router.get('/colecciones', requiresAuth, usuarioController.verColeccionesView)
 router.get('/colecciones/nueva', requiresAuth, usuarioController.nuevaColeccionView)
 router.post('/colecciones/nueva', requiresAuth, usuarioController.crearColeccion)
 router.get('/colecciones/:nickColeccion', requiresAuth, usuarioController.verColeccionDetalleView)
+router.post('/colecciones/:nickColeccion/agregar', requiresAuth, usuarioController.agregarAColeccion)
+router.post('/colecciones/:nickColeccion/eliminar', requiresAuth, usuarioController.eliminarDeColeccion)
 
 router.get('/notificaciones', requiresAuth, usuarioController.verNotificacionesView)
 router.post('/notificaciones/:id/vista', requiresAuth, usuarioController.marcarNotificacionVista)

@@ -1,24 +1,49 @@
-html 
-    head 
-        title Colección #{nickColeccion}
-    body 
-        h1 Colección: #{nickColeccion}
-        h3 Usuario: #{nickUsuario}
+extends layouts/app
 
-        if publicaciones && publicaciones.length > 0
-            div(style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px;")
-                each pub in publicaciones
-                    div(style="border: 1px solid #ccc; padding: 15px; border-radius: 8px; text-align: center; width: 250px;")
-                        h4= pub.titulo
-                        p= pub.descripcion
-                        if pub.imagen
-                            img(src=pub.imagen.url, alt=`Imagen de ${pub.titulo}`, style="max-width: 100%; border-radius: 4px; max-height: 200px; object-fit: cover;")
-                        else
-                            p Sin imagenes
-                        br
-                        a(href=`/publicacion/p/${pub.id}/1` style="display: inline-block; margin-top: 10px;") Ver publicacion
-        else 
-            p(style="margin-top: 20px;") No hay publicaciones en esta colección.
-        
-        div(style="margin-top: 30px;")
-            a(href="/usuario/colecciones") Volver a mis colecciones
+block content
+  .d-flex.justify-between.align-center.mb-6
+    div
+      h1.page-title(style="margin-bottom: 8px;") Colección: #{nickColeccion}
+      p.text-metadata Usuario: #{nickUsuario}
+    
+    a.btn.btn-secondary(href=`/usuario/colecciones`) Volver a mis colecciones
+
+  if publicaciones && publicaciones.length > 0
+    .gallery-grid
+      each pub in publicaciones
+        .card
+          a(href=`/publicacion/p/${pub.id}/1` style="display:block; text-decoration: none; color: inherit;")
+            .card-image-wrapper
+              if pub.imagen
+                img.card-image(src=pub.imagen.url, alt=`Imagen de ${pub.titulo}`)
+              else
+                .d-flex.align-center.justify-center(style="height: 100%; color: var(--text-muted);") Sin imágenes
+            .card-content
+              h3.card-title= pub.titulo
+              p.text-body(style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;")= pub.descripcion
+          if nickColeccion !== 'Favoritos'
+            form(action=`/usuario/colecciones/${nickColeccion}/eliminar` method="POST" style="padding: 0 16px 16px;")
+              input(type="hidden" name="idPublicacion" value=pub.id)
+              button.btn.btn-danger.btn-block(type="submit") Eliminar
+  else 
+    .empty-state
+      .empty-state-title Sin publicaciones
+      p.text-muted No hay publicaciones en esta colección.
+
+  if nickColeccion !== 'Favoritos'
+    h2.section-title.mt-6 Agregar Publicaciones a esta Colección
+    if publicacionesFav && publicacionesFav.length > 0
+      form(action=`/usuario/colecciones/${nickColeccion}/agregar` method="POST")
+        .gallery-grid
+          each pub in publicacionesFav
+            label.card(style="cursor: pointer; display: block;")
+              .card-content.d-flex.align-center.gap-2(style="padding-bottom: 0;")
+                input(type="checkbox" name="publicaciones" value=pub.id)
+                h4.card-title= pub.titulo
+              if pub.imagen
+                .card-image-wrapper.mt-4
+                  img.card-image(src=pub.imagen.url, alt=pub.titulo)
+        .mt-4
+          button.btn.btn-primary(type="submit") Agregar Seleccionadas
+    else
+      .alert.alert-info(style="margin-top: 16px; background-color: var(--surface-low); border: 1px solid var(--border);") No hay publicaciones nuevas en Favoritos disponibles para agregar.

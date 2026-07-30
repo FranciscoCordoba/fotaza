@@ -219,6 +219,17 @@ export class usuarioController {
 
         const { nombreColeccion: nombre, publicaciones } = parseResult.data
 
+        const existentes = await coleccionModel.getPublicacionesEnColeccion(nickUsuario, nombre)
+        if (existentes.length > 0 || nombre === 'Favoritos') {
+            const favs = await coleccionModel.getPublicacionesEnColeccion(nickUsuario, 'Favoritos')
+            const publicacionesFav = await Promise.all(favs.map(async (fav) => {
+                const publicacion = await publicacionModel.getById(fav.idPublicacion)
+                const imagen = await imagenModel.getByIdPublicacionAndOrden(fav.idPublicacion, 1)
+                return { ...publicacion, imagen }
+            }))
+            return res.render('nueva-coleccion', { error: "La colección ya existe", publicacionesFav, nickUsuario })
+        }
+
         let ids: number[] = []
         if (publicaciones) {
             if (Array.isArray(publicaciones)) {
@@ -261,7 +272,54 @@ export class usuarioController {
             }
         }))
 
-        return res.render('coleccion-detalle', { publicaciones, nickColeccion, nickUsuario })
+        let publicacionesFav: any[] = []
+        if (nickColeccion !== 'Favoritos') {
+            const favs = await coleccionModel.getPublicacionesEnColeccion(nickUsuario, 'Favoritos')
+            const idsEnColeccion = new Set(pubsEnColeccion.map(p => p.idPublicacion))
+            const favsDisponibles = favs.filter(f => !idsEnColeccion.has(f.idPublicacion))
+            
+            publicacionesFav = await Promise.all(favsDisponibles.map(async (fav) => {
+                const publicacion = await publicacionModel.getById(fav.idPublicacion)
+                const imagen = await imagenModel.getByIdPublicacionAndOrden(fav.idPublicacion, 1)
+                return { ...publicacion, imagen }
+            }))
+        }
+
+        return res.render('coleccion-detalle', { publicaciones, nickColeccion, nickUsuario, publicacionesFav })
+    }
+
+    static async agregarAColeccion(req: Request, res: Response) {
+        const nickUsuario = req.session!.user!.nickname
+        const nickColeccion = req.params.nickColeccion as string
+        const { publicaciones } = req.body
+        
+        if (publicaciones && nickColeccion !== 'Favoritos') {
+            let ids: number[] = []
+            if (Array.isArray(publicaciones)) {
+                ids = publicaciones.map(p => Number(p))
+            } else {
+                ids = [Number(publicaciones)]
+            }
+
+            const promesas = ids.map(idPub => {
+                if (!isNaN(idPub)) {
+                    return coleccionModel.create(nickUsuario, nickColeccion, idPub)
+                }
+            })
+            await Promise.all(promesas)
+        }
+        return res.redirect(`/usuario/colecciones/${nickColeccion}`)
+    }
+
+    static async eliminarDeColeccion(req: Request, res: Response) {
+        const nickUsuario = req.session!.user!.nickname
+        const nickColeccion = req.params.nickColeccion as string
+        const { idPublicacion } = req.body
+        
+        if (idPublicacion && nickColeccion !== 'Favoritos') {
+            await coleccionModel.delete(nickUsuario, nickColeccion, Number(idPublicacion))
+        }
+        return res.redirect(`/usuario/colecciones/${nickColeccion}`)
     }
 
     static async verNotificacionesView(req: Request, res: Response) {

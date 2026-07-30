@@ -9,6 +9,8 @@ router.get('/crear', requiresAuth, comunidadController.crearComunidadView);
 router.post('/crear', requiresAuth, upload.single('imagen'), comunidadController.crearComunidad);
 router.post('/:nickComunidad/seguir', requiresAuth, comunidadController.seguirComunidad);
 router.post('/:nickComunidad/dejar-seguir', requiresAuth, comunidadController.dejarDeSeguirComunidad);
+router.post('/:nickComunidad/compartir', requiresAuth, comunidadController.compartirPublicaciones);
+router.post('/:nickComunidad/dejar-compartir', requiresAuth, comunidadController.dejarDeCompartir);
 router.get('/:nickComunidad', comunidadController.getComunidadView);
 
 export default router;

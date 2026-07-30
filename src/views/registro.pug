@@ -1,25 +1,28 @@
-html 
-    head 
-        title Registro
-    body 
+extends layouts/auth
+
+block content
+  .auth-card
+    h1.auth-brand Fotaza
+    h2.card-title.text-center.mb-6 Registro de Usuario
     
-        div 
-            h2 Registro de Usuario
-            if error
-                p(style="color: red;")= error
-            form(action="/auth/registro" method="POST")
-                label(for="nickname") Nickname:
-                input(type="text", name="nickname", required) 
-                br
-                label(for="correo") Correo electrónico:
-                input(type="email", name="correo", required) 
-                br
-                label(for="nombre") Nombre completo:
-                input(type="text", name="nombre", required) 
-                br
-                label(for="password") Contraseña:
-                input(type="password", name="password", required)
-                br
-                button(type="submit") Registrarse
-            p
-                a(href="/auth/login") Ya tengo cuenta (Login)
+    if error
+      .alert.alert-danger= error
+      
+    form(action="/auth/registro", method="POST")
+      .form-group
+        label.form-label(for="nickname") Nickname
+        input.form-control(type="text", name="nickname", required)
+      .form-group
+        label.form-label(for="correo") Correo electrónico
+        input.form-control(type="email", name="correo", required)
+      .form-group
+        label.form-label(for="nombre") Nombre completo
+        input.form-control(type="text", name="nombre", required)
+      .form-group
+        label.form-label(for="password") Contraseña
+        input.form-control(type="password", name="password", required)
+        
+      button.btn.btn-primary.btn-block.mt-4(type="submit") Registrarse
+      
+    .text-center.mt-4
+      a.text-secondary(href="/auth/login") Ya tengo cuenta (Iniciar sesión)

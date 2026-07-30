@@ -1,18 +1,24 @@
-html 
-    head 
-        title Mis Chats
-    body 
-        h1 Mis Chats
-        a(href="/usuario/perfil/" + nickUsuario style="display:inline-block; margin-bottom:15px;") Volver a mi perfil
-        
-        if chats && chats.length > 0
-            ul(style="list-style-type: none; padding: 0;")
-                each chat in chats
-                    - var otro = chat.nickUsuario1 === nickUsuario ? chat.nickUsuario2 : chat.nickUsuario1
-                    li(style="margin-bottom: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 4px;")
-                        p(style="margin: 0;") Chat con 
-                            strong 
-                                a(href="/usuario/perfil/" + otro) #{otro}
-                        a(href="/chat/" + chat.id style="display:inline-block; margin-top:10px;") Entrar al chat
-        else 
-            p No tienes conversaciones aún.
+extends layouts/app.pug
+
+block content
+  .d-flex.align-center.justify-between.mb-6
+    h1.page-title Mis Chats
+    a.btn.btn-secondary(href=`/usuario/perfil/${nickUsuario}`) Volver a mi perfil
+
+  if chats && chats.length > 0
+    .comments-section(style="max-width: 800px;")
+      each chat in chats
+        - var otro = chat.nickUsuario1 === nickUsuario ? chat.nickUsuario2 : chat.nickUsuario1
+        .card.mb-4
+          .card-content.d-flex.align-center.justify-between
+            .d-flex.align-center.gap-4
+              .profile-avatar(style="width: 48px; height: 48px; font-size: 18px;")= otro[0].toUpperCase()
+              div
+                p.text-body.mb-1 Chat con 
+                  strong
+                    a(href=`/usuario/perfil/${otro}`) #{otro}
+            a.btn.btn-primary(href=`/chat/${chat.id}`) Entrar al chat
+  else 
+    .empty-state(style="max-width: 800px;")
+      .empty-state-title No hay chats
+      p.text-body No tienes conversaciones aún.

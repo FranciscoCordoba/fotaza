@@ -1,17 +1,19 @@
-html 
-    head 
-        title login / register
-    body 
-    
-        div 
-            if error
-                p(style="color: red;")= error
-            form(action="/auth/login" method="POST")
-                label(for="nickname") Nickname:
-                input(type="text", name="nickname") 
-                label(for="password") Contraseña:
-                input(type="password", name="password")
+extends layouts/auth
 
-                button Enviar 
-            p
-                a(href="/auth/registro") No tengo cuenta (Registrarse)
+block content
+  .auth-card
+    h1.auth-brand Fotaza
+    if error
+      .alert.alert-danger= error
+    form(action="/auth/login", method="POST")
+      .form-group
+        label.form-label(for="nickname") Nickname
+        input.form-control(type="text", name="nickname", required)
+      .form-group
+        label.form-label(for="password") Contraseña
+        input.form-control(type="password", name="password", required)
+      
+      button.btn.btn-primary.btn-block.mt-4(type="submit") Iniciar sesión
+      
+    .text-center.mt-4
+      a.text-secondary(href="/auth/registro") No tengo cuenta (Registrarse)

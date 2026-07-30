@@ -106,7 +106,8 @@ export class authController {
 
     static async cerrarSesion(req: Request, res: Response) {
         res.clearCookie('token')
-        return res.status(200).json({ message: 'Usuario deslogueado exitosamente' })
+        res.clearCookie('refreshToken')
+        return res.redirect('/auth/login')
     }
 }
 

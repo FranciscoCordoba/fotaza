@@ -1,21 +1,27 @@
-html 
-    head 
-        title Chat con #{otroUsuario}
-    body 
-        h1 Chat con #{otroUsuario}
-        a(href="/chat" style="display:inline-block; margin-bottom:15px;") Volver a mis chats
-        
-        div(style="border: 1px solid #ccc; padding: 15px; border-radius: 4px; max-width: 600px; height: 400px; overflow-y: scroll; margin-bottom: 15px;")
-            if mensajes && mensajes.length > 0
-                each msj in mensajes
-                    - var esMio = msj.nickRemitente === nickUsuario
-                    div(style=`margin-bottom: 10px; text-align: ${esMio ? 'right' : 'left'};`)
-                        div(style=`display: inline-block; padding: 8px 12px; border-radius: 12px; background-color: ${esMio ? '#007bff' : '#f1f0f0'}; color: ${esMio ? 'white' : 'black'}; text-align: left; max-width: 80%;`)
-                            p(style="margin: 0;") #{msj.contenido}
-                            small(style=`color: ${esMio ? '#e0e0e0' : '#888'}; font-size: 0.75em; display: block; margin-top: 4px;`) #{new Date(msj.createdAt).toLocaleDateString()}
-            else
-                p No hay mensajes aún.
+extends layouts/app.pug
 
-        form(action="/chat/" + chat.id + "/mensaje" method="POST")
-            input(type="text", name="contenido", placeholder="Escribe un mensaje...", required, style="width: 400px; padding: 8px;")
-            button(type="submit" style="padding: 8px 16px; background-color: #28a745; color: white; border: none; cursor: pointer; margin-left: 10px;") Enviar
+block content
+  .profile-header(style="margin-bottom: 24px; max-width: 800px;")
+    .profile-info
+      h1.page-title.mb-0 Chat con #{otroUsuario}
+  
+  .mb-4
+    a.btn.btn-secondary(href="/chat") Volver a mis chats
+  
+  .card(style="max-width: 800px; margin-bottom: 24px;")
+    .card-content(style="height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;")
+      if mensajes && mensajes.length > 0
+        each msj in mensajes
+          - var esMio = msj.nickRemitente === nickUsuario
+          div(style=`display: flex; flex-direction: column; align-items: ${esMio ? 'flex-end' : 'flex-start'};`)
+            div(style=`padding: 12px 16px; border-radius: 12px; max-width: 80%; background-color: ${esMio ? 'var(--primary)' : 'var(--surface-high)'}; color: ${esMio ? '#fff' : 'var(--text)'};`)
+              p.text-body.m-0 #{msj.contenido}
+              small(style=`color: ${esMio ? 'rgba(255,255,255,0.7)' : 'var(--text-muted)'}; font-size: 11px; display: block; margin-top: 6px; text-align: right;`) #{new Date(msj.createdAt).toLocaleDateString()}
+      else
+        .empty-state(style="flex: 1; display: flex; flex-direction: column; justify-content: center; border: none;")
+          .empty-state-title No hay mensajes aún.
+
+  form(action=`/chat/${chat.id}/mensaje` method="POST" style="max-width: 800px;")
+    .d-flex.gap-4
+      input.form-control.flex-1(type="text", name="contenido", placeholder="Escribe un mensaje...", required)
+      button.btn.btn-primary(type="submit") Enviar

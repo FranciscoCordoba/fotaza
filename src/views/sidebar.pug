@@ -1,41 +1,35 @@
-nav
-    span 
-        img(src="@/public/logo.png", alt= "imagen de perfil")
-        div 
-            p Nombre de usuario
-            p @nombre_usuario
-    
-    button Publicar Obra 
-    
-    ul 
-        li 
-          p icono 
-          a(href="/feed", style="text-decoration: none; color: inherit;")
-            p Feed Global
-        li 
-          p icono 
-          a(href="/feed/siguiendo", style="text-decoration: none; color: inherit;")
-            p Feed Siguiendo
-        li 
-          p icono 
-          p Tendencia  
-        li 
-          p icono 
-          p Colecciones  
-        li 
-          p icono 
-          p Mensajes  
-        if true
-            li 
-                p icono 
-                p Moderacion
-    
-    div 
-        div
-            p icono 
-            p Ajustes 
-        div
-            p icono 
-            p Cerrar Sesion 
-        
-            
+aside.sidebar
+  div
+    a.sidebar-brand(href="/feed") Fotaza
+  
+  if user
+    div.profile-header(style="padding: 16px; margin-bottom: 0;")
+      div.profile-avatar(style="width: 48px; height: 48px; font-size: 20px;")
+        | #{user.nickname.charAt(0).toUpperCase()}
+      div.profile-info
+        .text-label @#{user.nickname}
+
+  div.sidebar-nav
+    a.btn.btn-primary.btn-block.mb-4(href="/publicacion/crear") Publicar Obra
+
+    a.sidebar-link(href="/feed", class=currentPath === '/feed' ? 'active' : '')
+      | Feed Global
+    a.sidebar-link(href="/feed/siguiendo", class=currentPath === '/feed/siguiendo' ? 'active' : '')
+      | Feed Siguiendo
+      
+    if user
+      a.sidebar-link(href=`/usuario/colecciones`, class=currentPath && currentPath.startsWith('/usuario/colecciones') ? 'active' : '')
+        | Mis Colecciones
+      a.sidebar-link(href=`/usuario/perfil/${user.nickname}`, class=currentPath && currentPath.startsWith('/usuario/perfil') ? 'active' : '')
+        | Mi Perfil
+      a.sidebar-link(href="/chat", class=currentPath && currentPath.startsWith('/chat') ? 'active' : '')
+        | Mensajes
+      a.sidebar-link(href="/moderacion", class=currentPath && currentPath.startsWith('/moderacion') ? 'active' : '')
+        | Moderación
+
+  if user
+    div.sidebar-nav(style="margin-top: auto;")
+      a.sidebar-link(href="/usuario/notificaciones")
+        | Notificaciones
+      a.sidebar-link.text-danger(href="/auth/logout")
+        | Cerrar Sesión

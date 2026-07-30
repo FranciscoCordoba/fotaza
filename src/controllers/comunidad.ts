@@ -35,7 +35,7 @@ export class comunidadController {
 
         todasPublicaciones.sort((a, b) => b.createdAt > a.createdAt ? 1 : -1)
 
-        todasPublicaciones.map(async p => {
+        const promesasPublicaciones = todasPublicaciones.map(async p => {
             const imagenes = await imagenModel.getByIdPublicacion(p.id)
             const etiquetas = await etiquetaModel.getByIdPublicacion(p.id)
 
@@ -47,9 +47,27 @@ export class comunidadController {
             }
         })
 
-        const publicacionesConDatos = await Promise.all(todasPublicaciones)
+        const publicacionesConDatos = await Promise.all(promesasPublicaciones)
 
-        return res.render('comunidad', { comunidad, publicaciones: publicacionesConDatos, siguiendo })
+        let misPublicacionesDisponibles: any[] = []
+        if (siguiendo && nickUsuario) {
+            const misPubs = await publicacionModel.getByNickUsuario(nickUsuario)
+            const idsEnComunidad = new Set(idsPublicaciones)
+            const disponibles = misPubs.filter(p => !idsEnComunidad.has(p.id))
+            
+            misPublicacionesDisponibles = await Promise.all(disponibles.map(async p => {
+                const imagenes = await imagenModel.getByIdPublicacion(p.id)
+                return { ...p, imagen: imagenes[0] }
+            }))
+        }
+
+        return res.render('comunidad', { 
+            comunidad, 
+            publicaciones: publicacionesConDatos, 
+            siguiendo,
+            nickUsuario,
+            misPublicacionesDisponibles 
+        })
     }
 
     static async seguirComunidad(req: Request, res: Response) {
@@ -122,5 +140,37 @@ export class comunidadController {
         }
 
         return res.redirect(`/comunidad/${nickComunidad}`)
+    }
+
+    static async compartirPublicaciones(req: Request, res: Response) {
+        const nickComunidad = req.params.nickComunidad as string;
+        const { publicaciones } = req.body;
+        
+        if (publicaciones) {
+            let ids: number[] = [];
+            if (Array.isArray(publicaciones)) {
+                ids = publicaciones.map(p => Number(p));
+            } else {
+                ids = [Number(publicaciones)];
+            }
+
+            const promesas = ids.map(idPub => {
+                if (!isNaN(idPub)) {
+                    return publicacionEnComunidadModel.create(nickComunidad, idPub);
+                }
+            });
+            await Promise.all(promesas);
+        }
+        return res.redirect(`/comunidad/${nickComunidad}`);
+    }
+
+    static async dejarDeCompartir(req: Request, res: Response) {
+        const nickComunidad = req.params.nickComunidad as string;
+        const { idPublicacion } = req.body;
+        
+        if (idPublicacion) {
+            await publicacionEnComunidadModel.delete(nickComunidad, Number(idPublicacion));
+        }
+        return res.redirect(`/comunidad/${nickComunidad}`);
     }
 }

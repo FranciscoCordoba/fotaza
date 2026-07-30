@@ -20,6 +20,7 @@ app.set('view engine', 'pug')
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
+app.use(express.static(join(import.meta.dirname, 'public')))
 
 import type { Request, Response, NextFunction } from "express";
 
@@ -67,6 +68,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
         // No hay token, pero sí refreshToken
         renovarToken(refreshToken, req, res)
     }
+
+    res.locals.user = req.session.user
+    res.locals.currentPath = req.path
 
     next()
 })

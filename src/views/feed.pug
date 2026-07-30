@@ -1,35 +1,45 @@
-html 
-    head 
-        title Feed 
+extends layouts/app
 
-    body 
+block content
+  .d-flex.justify-between.align-center.mb-6
+    h1.page-title= titulo || 'Todas las publicaciones'
+    
+    if titulo === 'Feed de Comunidades Seguidas'
+      a.btn.btn-primary(href="/comunidad/crear") Crear comunidad
+    else
+      a.btn.btn-primary(href="/publicacion/crear") Subir nueva publicación
 
-        form(action="/publicacion/buscar", method="GET")
-            input(type="text", name="busqueda", placeholder="Buscar")
-            button Buscar 
+  .nav-tabs
+    a.nav-tab(href="/feed", class=(!titulo || titulo === 'Todas las publicaciones' ? 'active' : '')) Feed Global
+    a.nav-tab(href="/feed/siguiendo", class=(titulo && titulo.includes('seguidos') ? 'active' : '')) Feed Siguiendo
+    a.nav-tab(href="/feed/comunidades", class=(titulo === 'Feed de Comunidades Seguidas' ? 'active' : '')) Feed Comunidades
 
-        div(style="margin-bottom: 10px;")
-            a(href="/feed", style="margin-right: 10px;") Feed Global
-            a(href="/feed/siguiendo", style="margin-right: 10px;") Feed Siguiendo
-            a(href="/feed/comunidades", style="margin-right: 10px;") Feed Comunidades
-            a(href="/moderacion") Moderación
+  form.mb-6(action="/publicacion/buscar", method="GET")
+    .d-flex.gap-4
+      input.form-control.flex-1(type="text", name="busqueda", placeholder="Buscar publicaciones...")
+      button.btn.btn-primary(type="submit") Buscar 
 
-        h1= titulo || 'Todas las publicaciones'
-
-        if titulo === 'Feed de Comunidades Seguidas'
-            button(onclick="window.location.href = '/comunidad/crear'") Crear comunidad
-        else
-            button(onclick="window.location.href = '/publicacion/crear'") Subir nueva publicacion
-
-        .publicaciones
-            each publicacion in publicaciones 
-                div.publicacion(style="border:1px solid black;margin: 5px;")
-                    p #{publicacion.nickUsuario} - #{publicacion.titulo}
-                    p #{publicacion.descripcion}
-                    if publicacion.etiquetas && publicacion.etiquetas.length > 0
-                        p(style="margin: 5px 0; font-size: 0.85em; color: #666;")
-                            each etiqueta in publicacion.etiquetas
-                                span(style="margin-right: 5px; background-color: #f0f0f0; padding: 2px 6px; border-radius: 4px; display: inline-block;") ##{etiqueta.etiqueta}
-                    if publicacion.imagen
-                        img(src=publicacion.imagen.url, alt=publicacion.titulo, style="width: 200px; display: block; margin-top: 5px;")
-                    button(onclick="window.location.href = '/publicacion/p/" + publicacion.id + "/1'", style="margin-top: 5px;") Ver
+  if publicaciones && publicaciones.length > 0
+    .gallery-grid
+      each publicacion in publicaciones 
+        a.card(href=`/publicacion/p/${publicacion.id}/1`)
+          .card-image-wrapper
+            if publicacion.imagen
+              img.card-image(src=publicacion.imagen.url, alt=publicacion.titulo)
+            else
+              .d-flex.align-center.justify-center(style="height: 100%; color: var(--text-muted);") Sin imagen
+          .card-content
+            h3.card-title= publicacion.titulo
+            if publicacion.descripcion
+              p.text-body(style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;")= publicacion.descripcion
+            if publicacion.comunidadOrigen
+              p.text-metadata(style="color: var(--primary); font-weight: 600;") Comunidad: #{publicacion.comunidadOrigen}
+            p.text-metadata Por #{publicacion.nickUsuario}
+            if publicacion.etiquetas && publicacion.etiquetas.length > 0
+              .tag-list.mt-4
+                each etiqueta in publicacion.etiquetas
+                  span.tag ##{etiqueta.etiqueta}
+  else
+    .empty-state
+      h2.empty-state-title No hay publicaciones
+      p.text-secondary No se encontraron publicaciones en este feed.

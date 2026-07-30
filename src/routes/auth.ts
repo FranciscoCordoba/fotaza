@@ -8,6 +8,6 @@ router.post('/login', authController.loginUsuario)
 router.get('/registro', authController.registroUsuarioView)
 router.post('/registro', authController.registrarUsuario)
 //router.post('/refresh', authController.refreshToken)
-//router.post('/cerrar_sesion', authController.cerrarSesion)
+router.get('/logout', authController.cerrarSesion)
 
 export default router

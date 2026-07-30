@@ -1,40 +1,49 @@
-html 
-    head 
-        title Perfil de #{perfil.nickname}
-    body 
-        h1 Perfil de #{perfil.nickname}
-        
-        div(style="margin-bottom: 15px; font-size: 1.1em;")
-            span <strong>Seguidores:</strong> #{cantidadSeguidores} | 
-            span <strong>Seguidos:</strong> #{cantidadSeguidos}
+extends layouts/app
 
+block content
+  .profile-header
+    .profile-avatar
+      if perfil.nickname
+        | #{perfil.nickname.charAt(0).toUpperCase()}
+    .profile-info
+      h1.page-title.mb-4 Perfil de #{perfil.nickname}
+      .d-flex.gap-6.text-body.text-secondary
+        span <strong>#{cantidadSeguidores}</strong> Seguidores
+        span <strong>#{cantidadSeguidos}</strong> Seguidos
+    
+    .profile-actions
+      if !esPropio && nickUsuarioLogueado
+        if siguiendo
+          form(action="/usuario/dejar_seguir", method="POST")
+            input(type="hidden", name="nickSeguido", value=perfil.nickname)
+            button.btn.btn-secondary(type="submit") Dejar de Seguir
+        else
+          form(action="/usuario/seguir", method="POST")
+            input(type="hidden", name="nickSeguido", value=perfil.nickname)
+            button.btn.btn-primary(type="submit") Seguir
+      
+      if esPropio 
+        .d-flex.gap-4
+          a.btn.btn-secondary(href="/usuario/colecciones") Ver mis colecciones
+          a.btn.btn-secondary(href="/usuario/notificaciones") Mis Notificaciones
+          a.btn.btn-secondary(href="/chat") Mis Chats
 
-        if !esPropio && nickUsuarioLogueado
-            if siguiendo
-                form(action="/usuario/dejar_seguir", method="POST")
-                    input(type="hidden", name="nickSeguido", value=perfil.nickname)
-                    button(type="submit") Dejar de Seguir
-            else
-                form(action="/usuario/seguir", method="POST")
-                    input(type="hidden", name="nickSeguido", value=perfil.nickname)
-                    button(type="submit") Seguir
-
-        if esPropio 
-            div(style="margin-top: 15px; margin-bottom: 15px; display: flex; gap: 15px;")
-                a(href="/usuario/colecciones" style="padding: 8px 16px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px;") Ver mis colecciones
-                a(href="/usuario/notificaciones" style="padding: 8px 16px; background-color: #17a2b8; color: white; text-decoration: none; border-radius: 4px;") Mis Notificaciones
-                a(href="/chat" style="padding: 8px 16px; background-color: #28a745; color: white; text-decoration: none; border-radius: 4px;") Mis Chats
-
-        h2 Publicaciones 
-        if publicaciones && publicaciones.length > 0
-            ul
-                each pub in publicaciones
-                    li 
-                        h3= pub.titulo
-                        p= pub.descripcion
-                        if pub.imagen
-                            img(src=pub.imagen.url, alt=pub.titulo, width="200")
-                            br
-                        a(href=`/publicacion/p/${pub.id}/1`) Ver publicacion
-        else 
-            p Este usuario no tiene publicaciones.
+  h2.section-title.mb-6 Publicaciones 
+  
+  if publicaciones && publicaciones.length > 0
+    .gallery-grid
+      each pub in publicaciones
+        a.card(href=`/publicacion/p/${pub.id}/1`)
+          if pub.imagen
+            .card-image-wrapper
+              img.card-image(src=pub.imagen.url, alt=pub.titulo)
+          else
+            .card-image-wrapper(style="display: flex; align-items: center; justify-content: center;")
+              span.text-muted Sin imagen
+          .card-content
+            h3.card-title= pub.titulo
+            p.text-metadata= pub.descripcion
+  else 
+    .empty-state
+      .empty-state-title Sin publicaciones
+      p.text-muted Este usuario no tiene publicaciones.
