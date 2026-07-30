@@ -169,10 +169,19 @@ export class publicacionController {
             return res.redirect(backURL)
         }
 
-        const { busqueda } = parseResult.data
+        const { busqueda, etiqueta, autor, orden } = parseResult.data
 
-        const publicaciones = await publicacionModel.getByTitulo(busqueda)
-        const comunidades = await comunidadModel.search(busqueda)
+        let publicaciones = await publicacionModel.getAll()
+
+        if (busqueda) {
+            const b = busqueda.toLowerCase()
+            publicaciones = publicaciones.filter(p => p.titulo.toLowerCase().includes(b) || (p.descripcion && p.descripcion.toLowerCase().includes(b)))
+        }
+
+        if (autor) {
+            const a = autor.toLowerCase()
+            publicaciones = publicaciones.filter(p => p.nickUsuario.toLowerCase() === a)
+        }
 
         const publicacionesConDatos = await Promise.all(publicaciones.map(async publicacion => {
             const imagen = await imagenModel.getByIdPublicacionAndOrden(publicacion.id, 1)
@@ -184,7 +193,29 @@ export class publicacionController {
             }
         }))
 
-        return res.render('explorador', { publicacionesConDatos, comunidades })
+        let result = publicacionesConDatos;
+
+        if (etiqueta) {
+            const e = etiqueta.toLowerCase().replace('#', '')
+            result = result.filter(p => p.etiquetas && p.etiquetas.some(t => t.etiqueta.toLowerCase() === e))
+        }
+
+        if (orden === 'antiguas') {
+            result.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        } else {
+            result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        }
+
+        const comunidades = busqueda ? await comunidadModel.search(busqueda) : []
+
+        return res.render('explorador', { 
+            publicacionesConDatos: result, 
+            comunidades,
+            busqueda,
+            etiqueta,
+            autor,
+            orden
+        })
     }
 
     static async crearPublicacionView(req: Request, res: Response) {

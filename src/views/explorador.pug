@@ -4,10 +4,28 @@ block content
   .d-flex.justify-between.align-center.mb-6
     h1.page-title Explorar contenido
 
-  form.mb-6(action="/publicacion/buscar", method="GET")
-    .d-flex.gap-4
-      input.form-control.flex-1(type="text", name="busqueda", placeholder="Buscar publicaciones...")
-      button.btn.btn-primary(type="submit") Buscar 
+  form.mb-6.card(action="/publicacion/buscar", method="GET" style="padding: 24px;")
+    h2.section-title.mb-4(style="font-size: 1.25rem;") Filtros de Búsqueda
+    .d-flex.flex-wrap.gap-4.align-end
+      .flex-1(style="min-width: 200px;")
+        label.text-label(style="display: block; margin-bottom: 8px;") Título o Descripción
+        input.form-control(type="text", name="busqueda", placeholder="Ej: Paisaje...", value=busqueda || '')
+      
+      .flex-1(style="min-width: 200px;")
+        label.text-label(style="display: block; margin-bottom: 8px;") Autor (Nickname)
+        input.form-control(type="text", name="autor", placeholder="Ej: juan123", value=autor || '')
+      
+      .flex-1(style="min-width: 200px;")
+        label.text-label(style="display: block; margin-bottom: 8px;") Etiqueta
+        input.form-control(type="text", name="etiqueta", placeholder="Ej: #naturaleza", value=etiqueta || '')
+
+      .flex-1(style="min-width: 200px;")
+        label.text-label(style="display: block; margin-bottom: 8px;") Ordenar por
+        select.form-control(name="orden")
+          option(value="recientes" selected=(orden==='recientes' || !orden)) Más recientes
+          option(value="antiguas" selected=(orden==='antiguas')) Más antiguas
+
+      button.btn.btn-primary(type="submit" style="height: 48px; padding: 0 32px;") Aplicar Filtros
 
   .mb-6
     h2.section-title Publicaciones Destacadas

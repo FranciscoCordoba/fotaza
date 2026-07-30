@@ -96,7 +96,10 @@ export const comentarImagenBodySchema = z.object({
 })
 
 export const buscarPublicacionesQuerySchema = z.object({
-    busqueda: z.string().min(1)
+    busqueda: z.string().optional(),
+    etiqueta: z.string().optional(),
+    autor: z.string().optional(),
+    orden: z.enum(['recientes', 'antiguas']).optional()
 })
 
 export const crearPublicacionBodySchema = z.object({

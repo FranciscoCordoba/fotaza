@@ -36,7 +36,7 @@ export class denunciaComentarioModel {
         const nuevaDenuncia = await db.insert(denunciaComentarioTable).values({
             nickUsuario,
             idComentario
-        }).returning()
+        }).onConflictDoNothing().returning()
         return nuevaDenuncia
     }
 
