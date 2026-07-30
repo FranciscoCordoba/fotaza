@@ -40,6 +40,14 @@ try {
         rol: "admin"
     });
 
+    await usuarioModel.create({
+        nickname: "moderador",
+        password: passwordHash,
+        correo: `moderador@seed.com`,
+        nombre: "Moderador",
+        rol: "moderador"
+    });
+
     // 2 Publicaciones para ese usuario
     const pub1 = await publicacionModel.create(usuarioNick, "Publicación Seed 1", "Mi primera publicación generada por seed");
     const pub2 = await publicacionModel.create(usuarioNick, "Publicación Seed 2", "Mi segunda publicación generada por seed");
