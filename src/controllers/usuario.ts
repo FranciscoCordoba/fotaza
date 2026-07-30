@@ -7,6 +7,44 @@ import { publicacionModel } from "../models/publicacion.js";
 import { imagenModel } from "../models/imagen.js";
 import { notificacionModel } from "../models/notificacion.js";
 import { coleccionModel } from "../models/coleccion.js";
+import { z } from "zod";
+
+const perfilUsuarioParamsSchema = z.object({
+    nickname: z.string().min(1, 'Debe indicar un usuario')
+});
+
+const eliminarUsuarioBodySchema = z.object({
+    id: z.string().min(1)
+});
+
+const usuarioSigueABodySchema = z.object({
+    nickSeguido: z.string().min(1)
+});
+
+const seguirUsuarioBodySchema = z.object({
+    nickSeguido: z.string().min(1)
+});
+
+const dejarSeguirUsuarioBodySchema = z.object({
+    nickSeguido: z.string().min(1)
+});
+
+const listarSeguidoresBodySchema = z.object({
+    id: z.string().min(1)
+});
+
+const crearColeccionBodySchema = z.object({
+    nombreColeccion: z.string().trim().min(1, "Nombre de coleccion invalido"),
+    publicaciones: z.union([z.string(), z.number(), z.array(z.union([z.string(), z.number()]))]).optional()
+});
+
+const verColeccionDetalleParamsSchema = z.object({
+    nickColeccion: z.string().trim().min(1, "Coleccion no especificada")
+});
+
+const marcarNotificacionVistaParamsSchema = z.object({
+    id: z.coerce.number()
+});
 
 export class usuarioController {
 
@@ -16,10 +54,12 @@ export class usuarioController {
     }
 
     static async perfilUsuario(req: Request, res: Response) {
-        const { nickname } = req.params;
+        const parseResult = perfilUsuarioParamsSchema.safeParse(req.params);
 
-        if (!nickname || nickname === '' || typeof nickname !== 'string')
+        if (!parseResult.success)
             throw new Error('Debe indicar un usuario')
+
+        const { nickname } = parseResult.data;
 
         const perfil = await usuarioModel.getByNickname(nickname);
         if (!perfil) {
@@ -65,7 +105,11 @@ export class usuarioController {
         });
     }
     static async eliminarUsuario(req: Request, res: Response) {
-        const { id } = req.body
+        const parseResult = eliminarUsuarioBodySchema.safeParse(req.body);
+        if (!parseResult.success) {
+            return res.status(400).json({ error: "ID de usuario inválido" });
+        }
+        const { id } = parseResult.data;
 
         const resultado = await usuarioModel.delete(id)
 
@@ -74,7 +118,11 @@ export class usuarioController {
 
     //Tabla usuarioSigueA
     static async usuarioSigueA(req: Request, res: Response) {
-        const { nickSeguido } = req.body
+        const parseResult = usuarioSigueABodySchema.safeParse(req.body);
+        if (!parseResult.success) {
+            throw new Error('Debe indicar el usuario');
+        }
+        const { nickSeguido } = parseResult.data;
         const nickSeguidor = req.session?.user?.nickname
 
         if (!nickSeguidor)
@@ -88,7 +136,11 @@ export class usuarioController {
     }
 
     static async seguirUsuario(req: Request, res: Response) {
-        const { nickSeguido } = req.body
+        const parseResult = seguirUsuarioBodySchema.safeParse(req.body);
+        if (!parseResult.success) {
+            throw new Error('Debe indicar el usuario');
+        }
+        const { nickSeguido } = parseResult.data;
         const nickSeguidor = req.session?.user?.nickname
 
         if (!nickSeguidor)
@@ -110,7 +162,11 @@ export class usuarioController {
     }
 
     static async dejarSeguirUsuario(req: Request, res: Response) {
-        const { nickSeguido } = req.body
+        const parseResult = dejarSeguirUsuarioBodySchema.safeParse(req.body);
+        if (!parseResult.success) {
+            throw new Error('Debe indicar el usuario');
+        }
+        const { nickSeguido } = parseResult.data;
         const nickSeguidor = req.session?.user?.nickname
 
         if (!nickSeguidor)
@@ -127,7 +183,11 @@ export class usuarioController {
     }
 
     static async listarSeguidores(req: Request, res: Response) {
-        const { id } = req.body
+        const parseResult = listarSeguidoresBodySchema.safeParse(req.body);
+        if (!parseResult.success) {
+            throw new Error('Debe indicar el id');
+        }
+        const { id } = parseResult.data;
         const info: usuarioSigueA[] = await usuarioSigueAModel.getAllSeguidores(id)
         return info
     }
@@ -171,12 +231,12 @@ export class usuarioController {
         const nickUsuario = req.session?.user?.nickname;
         if (!nickUsuario) throw new Error("Usuario no logueado");
 
-        const { nombreColeccion, publicaciones } = req.body;
-        if (!nombreColeccion || typeof nombreColeccion !== 'string' || nombreColeccion.trim() === '') {
+        const parseResult = crearColeccionBodySchema.safeParse(req.body);
+        if (!parseResult.success) {
             throw new Error("Nombre de coleccion invalido");
         }
 
-        const nombre = nombreColeccion.trim();
+        const { nombreColeccion: nombre, publicaciones } = parseResult.data;
 
         let ids: number[] = [];
         if (publicaciones) {
@@ -202,8 +262,10 @@ export class usuarioController {
         const nickUsuario = req.session?.user?.nickname;
         if (!nickUsuario) throw new Error("Usuario no logueado");
 
-        const { nickColeccion } = req.params;
-        if (!nickColeccion || typeof nickColeccion !== 'string' || nickColeccion.trim() === '') throw new Error("Coleccion no especificada");
+        const parseResult = verColeccionDetalleParamsSchema.safeParse(req.params);
+        if (!parseResult.success) throw new Error("Coleccion no especificada");
+
+        const { nickColeccion } = parseResult.data;
 
         const pubsEnColeccion = await coleccionModel.getPublicacionesEnColeccion(nickUsuario, nickColeccion);
 
@@ -232,9 +294,10 @@ export class usuarioController {
         const nickUsuario = req.session?.user?.nickname;
         if (!nickUsuario) throw new Error("Usuario no logueado");
 
-        const { id } = req.params;
-        const idNum = Number(id);
-        if (isNaN(idNum)) throw new Error("ID invalido");
+        const parseResult = marcarNotificacionVistaParamsSchema.safeParse(req.params);
+        if (!parseResult.success) throw new Error("ID invalido");
+
+        const idNum = parseResult.data.id;
 
         await notificacionModel.marcarComoVista(idNum, nickUsuario);
 

@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { z } from "zod";
 import { denunciaComentarioModel } from "../models/denunciaComentario.js";
 import { comentarioModel } from "../models/comentario.js";
 import { usuarioModel } from "../models/usuario.js";
@@ -6,6 +7,21 @@ import { denunciaImagenModel } from "../models/denunciaImagen.js";
 import { publicacionModel } from "../models/publicacion.js";
 import { imagenModel } from "../models/imagen.js";
 import { notificacionModel } from "../models/notificacion.js";
+
+const desestimarSchema = z.object({
+    nickUsuario: z.string().min(1),
+    idComentario: z.coerce.number()
+});
+
+const eliminarComentarioSchema = z.object({
+    idComentario: z.coerce.number()
+});
+
+const actualizarEstadoDenunciaImagenSchema = z.object({
+    nickUsuario: z.string().min(1),
+    idImagen: z.coerce.number(),
+    estado: z.enum(['pendiente', 'aceptada', 'rechazada'])
+});
 
 export class moderacionController {
     static async getDenuncias(req: Request, res: Response) {
@@ -38,10 +54,15 @@ export class moderacionController {
             return res.redirect('/auth/login');
         }
 
-        const { nickUsuario, idComentario } = req.body;
+        const parseResult = desestimarSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            return res.status(400).send('Datos inválidos');
+        }
+
+        const { nickUsuario, idComentario } = parseResult.data;
 
         try {
-            await denunciaComentarioModel.delete(String(nickUsuario), Number(idComentario));
+            await denunciaComentarioModel.delete(nickUsuario, idComentario);
             res.redirect('/moderacion');
         } catch (error) {
             console.error(error);
@@ -54,15 +75,19 @@ export class moderacionController {
             return res.redirect('/auth/login');
         }
 
-        const { idComentario } = req.body;
-        const nickname = req.session.user.nickname;
+        const parseResult = eliminarComentarioSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            return res.status(400).send('Datos inválidos');
+        }
+
+        const { idComentario } = parseResult.data;
 
         try {
             // Borrar todas las denuncias del comentario
-            await denunciaComentarioModel.deleteAllByComment(Number(idComentario));
+            await denunciaComentarioModel.deleteAllByComment(idComentario);
 
             // Borrar el comentario
-            await comentarioModel.delete(Number(idComentario));
+            await comentarioModel.delete(idComentario);
 
             res.redirect('/moderacion');
         } catch (error) {
@@ -84,13 +109,14 @@ export class moderacionController {
                 return res.status(403).send('No tienes permisos para realizar esta acción');
             }
 
-            const { nickUsuario, idImagen, estado } = req.body;
-
-            if (!['pendiente', 'aceptada', 'rechazada'].includes(estado)) {
+            const parseResult = actualizarEstadoDenunciaImagenSchema.safeParse(req.body);
+            if (!parseResult.success) {
                 return res.status(400).send('Estado inválido');
             }
 
-            const denunciaExistente = await denunciaImagenModel.getByUsuarioAndImagen(String(nickUsuario), Number(idImagen));
+            const { nickUsuario, idImagen, estado } = parseResult.data;
+
+            const denunciaExistente = await denunciaImagenModel.getByUsuarioAndImagen(nickUsuario, idImagen);
             if (!denunciaExistente) {
                 return res.status(404).send('Denuncia no encontrada');
             }
@@ -99,10 +125,10 @@ export class moderacionController {
                 return res.status(400).send('La denuncia ya fue procesada y su estado no puede ser modificado');
             }
 
-            await denunciaImagenModel.updateEstado(String(nickUsuario), Number(idImagen), estado as 'pendiente' | 'aceptada' | 'rechazada');
+            await denunciaImagenModel.updateEstado(nickUsuario, idImagen, estado);
 
             if (estado === 'aceptada') {
-                const imagen = await imagenModel.getById(Number(idImagen));
+                const imagen = await imagenModel.getById(idImagen);
                 if (imagen) {
                     const publicacion = await publicacionModel.getById(imagen.idPublicacion);
                     if (publicacion) {
@@ -121,7 +147,7 @@ export class moderacionController {
                         const motivoTexto = motivoObj ? motivoObj.motivo : 'Inapropiado';
 
                         await notificacionModel.create(
-                            String(nickUsuario), // usuario que denuncia
+                            nickUsuario, // usuario que denuncia
                             autorNick, // usuario que recibe (autor de la publicación)
                             `strike: ${motivoTexto}`
                         );

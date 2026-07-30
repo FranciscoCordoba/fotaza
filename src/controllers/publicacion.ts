@@ -17,14 +17,84 @@ import { notificacionModel } from "../models/notificacion.js";
 import { interesModel } from "../models/interes.js";
 import { mensajeModel } from "../models/mensaje.js";
 import { conversacionModel } from "../models/conversacion.js";
+import { z } from "zod";
+
+const getPublicacionByIdParamsSchema = z.object({
+    id: z.coerce.number({ message: "ID invalido" })
+});
+
+const getPublicacionByIdViewParamsSchema = z.object({
+    id: z.coerce.number({ message: "ID invalido" }),
+    orden: z.coerce.number({ message: "Orden invalido" })
+});
+
+const valorarImagenParamsSchema = z.object({
+    idImagen: z.coerce.number()
+});
+const valorarImagenBodySchema = z.object({
+    puntaje: z.coerce.number().min(1).max(5)
+});
+
+const comentarImagenParamsSchema = z.object({
+    idImagen: z.coerce.number()
+});
+const comentarImagenBodySchema = z.object({
+    texto: z.string().trim().min(1)
+});
+
+const buscarPublicacionesQuerySchema = z.object({
+    busqueda: z.string().min(1)
+});
+
+const crearPublicacionBodySchema = z.object({
+    titulo: z.string().min(1),
+    descripcion: z.string().optional(),
+    etiquetas: z.string().optional(),
+    comunidades: z.union([z.string(), z.array(z.string())]).optional()
+});
+
+const toggleComentariosImagenParamsSchema = z.object({
+    idImagen: z.coerce.number()
+});
+
+const denunciarComentarioParamsSchema = z.object({
+    idComentario: z.coerce.number()
+});
+
+const denunciarImagenViewParamsSchema = z.object({
+    idImagen: z.coerce.number()
+});
+
+const denunciarImagenPostParamsSchema = z.object({
+    idImagen: z.coerce.number()
+});
+const denunciarImagenPostBodySchema = z.object({
+    idMotivo: z.coerce.number(),
+    descripcion: z.string().optional()
+});
+
+const toggleFavoritoParamsSchema = z.object({
+    id: z.coerce.number()
+});
+
+const setCopyrightImagenParamsSchema = z.object({
+    idImagen: z.coerce.number()
+});
+const setCopyrightImagenBodySchema = z.object({
+    textoMarcaDeAgua: z.string().trim().min(1)
+});
+
+const marcarInteresParamsSchema = z.object({
+    idImagen: z.coerce.number()
+});
 
 export class publicacionController {
     static async getPublicacionById(req: Request, res: Response) {
-        const { id } = req.params
-
-        const idNumero: number = Number(id)
-        if (isNaN(idNumero))
-            throw new Error("ID invalido")
+        const parseResult = getPublicacionByIdParamsSchema.safeParse(req.params);
+        if (!parseResult.success) {
+            throw new Error("ID invalido");
+        }
+        const { id: idNumero } = parseResult.data;
 
         const publicacion = await publicacionModel.getById(idNumero)
         if (!publicacion)
@@ -33,19 +103,16 @@ export class publicacionController {
     }
 
     static async getPublicacionByIdView(req: Request, res: Response) {
-        const { id, orden } = req.params
-
-        const idNumero: number = Number(id)
-        if (isNaN(idNumero))
-            throw new Error("ID invalido")
+        const parseResult = getPublicacionByIdViewParamsSchema.safeParse(req.params);
+        if (!parseResult.success) {
+            const firstError = parseResult.error.issues[0]?.message;
+            throw new Error(firstError || "ID invalido");
+        }
+        const { id: idNumero, orden: ordenNumero } = parseResult.data;
 
         const publicacion = await publicacionModel.getById(idNumero)
         if (!publicacion)
             throw new Error("Publicacion no encontrada")
-
-        const ordenNumero: number = Number(orden)
-        if (isNaN(ordenNumero))
-            throw new Error("Orden invalido")
 
         const imagen = await imagenModel.getByIdPublicacionAndOrden(publicacion.id, ordenNumero)
         const etiquetas = await etiquetaModel.getByIdPublicacion(publicacion.id)
@@ -85,15 +152,15 @@ export class publicacionController {
     }
 
     static async valorarImagen(req: Request, res: Response) {
-        const { idImagen } = req.params
-        const { puntaje } = req.body
+        const paramsResult = valorarImagenParamsSchema.safeParse(req.params);
+        const bodyResult = valorarImagenBodySchema.safeParse(req.body);
 
-        const idImagenNum = Number(idImagen)
-        const puntajeNum = Number(puntaje)
-
-        if (isNaN(idImagenNum) || isNaN(puntajeNum) || puntajeNum < 1 || puntajeNum > 5) {
-            throw new Error("Datos de valoracion invalidos")
+        if (!paramsResult.success || !bodyResult.success) {
+            throw new Error("Datos de valoracion invalidos");
         }
+
+        const idImagenNum = paramsResult.data.idImagen;
+        const puntajeNum = bodyResult.data.puntaje;
 
         const nickUsuario = req.session?.user?.nickname
 
@@ -112,17 +179,19 @@ export class publicacionController {
     }
 
     static async comentarImagen(req: Request, res: Response) {
-        const { idImagen } = req.params
-        const { texto } = req.body
+        const paramsResult = comentarImagenParamsSchema.safeParse(req.params);
+        const bodyResult = comentarImagenBodySchema.safeParse(req.body);
 
-        const idImagenNum = Number(idImagen)
-        if (isNaN(idImagenNum) || !texto || texto.trim().length === 0) {
-            throw new Error("Datos de comentario invalidos")
+        if (!paramsResult.success || !bodyResult.success) {
+            throw new Error("Datos de comentario invalidos");
         }
+
+        const idImagenNum = paramsResult.data.idImagen;
+        const { texto } = bodyResult.data;
 
         const nickUsuario = req.session?.user?.nickname
 
-        await comentarioModel.create(nickUsuario!, idImagenNum, texto.trim())
+        await comentarioModel.create(nickUsuario!, idImagenNum, texto)
 
         const imagen = await imagenModel.getById(idImagenNum);
         if (imagen) {
@@ -137,10 +206,13 @@ export class publicacionController {
     }
 
     static async buscarPublicacionesView(req: Request, res: Response) {
-        const { busqueda } = req.query
+        const parseResult = buscarPublicacionesQuerySchema.safeParse(req.query);
 
-        if (!busqueda || typeof busqueda !== 'string')
-            throw new Error("Busqueda invalida")
+        if (!parseResult.success) {
+            throw new Error("Busqueda invalida");
+        }
+
+        const { busqueda } = parseResult.data;
 
         const publicaciones = await publicacionModel.getByTitulo(busqueda)
         const comunidades = await comunidadModel.search(busqueda)
@@ -168,13 +240,17 @@ export class publicacionController {
     }
 
     static async crearPublicacion(req: Request, res: Response) {
-        const { titulo, descripcion, etiquetas } = req.body
+        const parseResult = crearPublicacionBodySchema.safeParse(req.body);
+        if (!parseResult.success) {
+            throw new Error("Error al crear publicacion");
+        }
+        const { titulo, descripcion, etiquetas, comunidades } = parseResult.data;
         const nickUsuario = req.session?.user?.nickname
 
         if (!nickUsuario)
             throw new Error("Usuario no logueado")
 
-        const resultado = await publicacionModel.create(nickUsuario, titulo, descripcion)
+        const resultado = await publicacionModel.create(nickUsuario, titulo, descripcion || "")
 
         if (!resultado)
             throw new Error("Error al crear publicacion")
@@ -207,7 +283,6 @@ export class publicacionController {
             }
         }
 
-        const comunidades = req.body.comunidades
         if (comunidades) {
             const listaComunidades = Array.isArray(comunidades) ? comunidades : [comunidades]
             const saveComunidadesPromises = listaComunidades.map(nickComunidad =>
@@ -220,12 +295,12 @@ export class publicacionController {
     }
 
     static async toggleComentariosImagen(req: Request, res: Response) {
-        const { idImagen } = req.params
-        const { comentariosActivos } = req.body
-        const idImagenNum = Number(idImagen)
-        if (isNaN(idImagenNum)) {
+        const paramsResult = toggleComentariosImagenParamsSchema.safeParse(req.params);
+        if (!paramsResult.success) {
             throw new Error("Datos invalidos")
         }
+        const idImagenNum = paramsResult.data.idImagen;
+        const { comentariosActivos } = req.body;
 
         const imagen = await imagenModel.getById(idImagenNum)
         if (!imagen) throw new Error("Imagen no encontrada")
@@ -237,17 +312,17 @@ export class publicacionController {
             throw new Error("No tienes permiso")
         }
 
-        await imagenModel.toggleComentariosActivos(idImagenNum, comentariosActivos === 'true')
+        await imagenModel.toggleComentariosActivos(idImagenNum, comentariosActivos === 'true' || comentariosActivos === true)
         const backURL = req.header('Referer') || '/feed'
         return res.redirect(backURL)
     }
 
     static async denunciarComentario(req: Request, res: Response) {
-        const { idComentario } = req.params
-        const idComentarioNum = Number(idComentario)
-        if (isNaN(idComentarioNum)) {
+        const parseResult = denunciarComentarioParamsSchema.safeParse(req.params);
+        if (!parseResult.success) {
             throw new Error("Datos invalidos")
         }
+        const idComentarioNum = parseResult.data.idComentario;
 
         const nickUsuario = req.session?.user?.nickname
         if (!nickUsuario) {
@@ -260,9 +335,9 @@ export class publicacionController {
     }
 
     static async denunciarImagenView(req: Request, res: Response) {
-        const { idImagen } = req.params;
-        const idImagenNum = Number(idImagen);
-        if (isNaN(idImagenNum)) throw new Error("Datos invalidos");
+        const parseResult = denunciarImagenViewParamsSchema.safeParse(req.params);
+        if (!parseResult.success) throw new Error("Datos invalidos");
+        const idImagenNum = parseResult.data.idImagen;
 
         const nickUsuario = req.session?.user?.nickname;
         if (!nickUsuario) throw new Error("Usuario no logueado");
@@ -289,14 +364,16 @@ export class publicacionController {
     }
 
     static async denunciarImagenPost(req: Request, res: Response) {
-        const { idImagen } = req.params;
-        const { idMotivo, descripcion } = req.body;
-        const idImagenNum = Number(idImagen);
-        const idMotivoNum = Number(idMotivo);
+        const paramsResult = denunciarImagenPostParamsSchema.safeParse(req.params);
+        const bodyResult = denunciarImagenPostBodySchema.safeParse(req.body);
 
-        if (isNaN(idImagenNum) || isNaN(idMotivoNum)) {
+        if (!paramsResult.success || !bodyResult.success) {
             throw new Error("Datos invalidos");
         }
+
+        const idImagenNum = paramsResult.data.idImagen;
+        const idMotivoNum = bodyResult.data.idMotivo;
+        const { descripcion } = bodyResult.data;
 
         const nickUsuario = req.session?.user?.nickname;
         if (!nickUsuario) throw new Error("Usuario no logueado");
@@ -315,9 +392,9 @@ export class publicacionController {
     }
 
     static async toggleFavorito(req: Request, res: Response) {
-        const { id } = req.params;
-        const idPublicacion = Number(id);
-        if (isNaN(idPublicacion)) throw new Error("Datos invalidos");
+        const parseResult = toggleFavoritoParamsSchema.safeParse(req.params);
+        if (!parseResult.success) throw new Error("Datos invalidos");
+        const idPublicacion = parseResult.data.id;
 
         const nickUsuario = req.session?.user?.nickname;
         if (!nickUsuario) throw new Error("Usuario no logueado");
@@ -335,13 +412,15 @@ export class publicacionController {
     }
 
     static async setCopyrightImagen(req: Request, res: Response) {
-        const { idImagen } = req.params;
-        const { textoMarcaDeAgua } = req.body;
-        const idImagenNum = Number(idImagen);
+        const paramsResult = setCopyrightImagenParamsSchema.safeParse(req.params);
+        const bodyResult = setCopyrightImagenBodySchema.safeParse(req.body);
 
-        if (isNaN(idImagenNum) || !textoMarcaDeAgua || textoMarcaDeAgua.trim() === "") {
+        if (!paramsResult.success || !bodyResult.success) {
             throw new Error("Datos invalidos");
         }
+
+        const idImagenNum = paramsResult.data.idImagen;
+        const { textoMarcaDeAgua } = bodyResult.data;
 
         const nickUsuario = req.session?.user?.nickname;
         if (!nickUsuario) throw new Error("Usuario no logueado");
@@ -363,7 +442,7 @@ export class publicacionController {
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
 
-        const result: any = await subirACaudinaryConMarcaDeAgua(buffer, textoMarcaDeAgua.trim());
+        const result: any = await subirACaudinaryConMarcaDeAgua(buffer, textoMarcaDeAgua);
 
         await imagenModel.updateUrlAndCopyright(idImagenNum, result.secure_url);
 
@@ -371,10 +450,9 @@ export class publicacionController {
     }
 
     static async marcarInteres(req: Request, res: Response) {
-        const { idImagen } = req.params;
-        const idImagenNum = Number(idImagen);
-
-        if (isNaN(idImagenNum)) throw new Error("Datos invalidos");
+        const parseResult = marcarInteresParamsSchema.safeParse(req.params);
+        if (!parseResult.success) throw new Error("Datos invalidos");
+        const idImagenNum = parseResult.data.idImagen;
 
         const nickUsuario = req.session?.user?.nickname;
         if (!nickUsuario) throw new Error("Usuario no logueado");

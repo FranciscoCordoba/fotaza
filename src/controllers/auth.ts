@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { z } from "zod";
 import { usuarioModel } from "../models/usuario.js";
 import type { usuarioInsert } from "../utils/types.js";
 import bcrypt from "bcrypt";
@@ -6,13 +7,36 @@ import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secretKey';
 
+const loginSchema = z.object({
+    nickname: z.string({ message: 'Nickname es requerido' }).min(1, 'Nickname es requerido'),
+    password: z.string({ message: 'Contraseña es requerida' }).min(1, 'Contraseña es requerida')
+});
+
+const refreshTokenCookieSchema = z.object({
+    refreshToken: z.string({ message: 'No hay refresh token' }).min(1, 'No hay refresh token')
+});
+
+const registrarUsuarioSchema = z.object({
+    nickname: z.string({ message: 'Nickname es requerido' }).min(1, 'Nickname es requerido'),
+    correo: z.string({ message: 'Correo es requerido' }).min(1, 'Correo es requerido'),
+    nombre: z.string({ message: 'Nombre es requerido' }).min(1, 'Nombre es requerido'),
+    password: z.string({ message: 'Contraseña es requerida' }).min(1, 'Contraseña es requerida'),
+    rol: z.enum(['usuario', 'moderador', 'admin']).optional(),
+    activo: z.boolean().optional(),
+    strikes: z.number().optional()
+});
+
 export class authController {
     static async loginUsuarioView(req: Request, res: Response) {
         res.render('login');
     }
 
     static async loginUsuario(req: Request, res: Response) {
-        const { nickname, password } = req.body;
+        const parseResult = loginSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            throw new Error(parseResult.error.issues[0]?.message || 'Datos de login inválidos');
+        }
+        const { nickname, password } = parseResult.data;
 
         const usuario = await usuarioModel.getByNickname(nickname);
         if (!usuario)
@@ -49,10 +73,12 @@ export class authController {
     }
 
     static async refreshToken(req: Request, res: Response) {
-        const { refreshToken } = req.cookies;
+        const parseResult = refreshTokenCookieSchema.safeParse(req.cookies);
 
-        if (!refreshToken)
+        if (!parseResult.success)
             return res.status(401).json({ message: 'No hay refresh token' });
+
+        const { refreshToken } = parseResult.data;
 
         try {
             const data: any = jwt.verify(refreshToken, JWT_SECRET);
@@ -77,7 +103,11 @@ export class authController {
     }
 
     static async registrarUsuario(req: Request, res: Response) {
-        const newUsuario: usuarioInsert = req.body;
+        const parseResult = registrarUsuarioSchema.safeParse(req.body);
+        if (!parseResult.success) {
+            throw new Error(parseResult.error.issues[0]?.message || 'Datos de registro inválidos');
+        }
+        const newUsuario: usuarioInsert = parseResult.data;
 
         const existe = await usuarioModel.getByNickname(newUsuario.nickname);
         if (existe)
@@ -98,3 +128,4 @@ export class authController {
         return res.status(200).json({ message: 'Usuario deslogueado exitosamente' });
     }
 }
+
